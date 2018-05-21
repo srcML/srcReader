@@ -60,6 +60,8 @@ public:
     std::string name;
     boost::optional<std::string> value;
 
+    /** @TODO add attr namespaces */
+
     srcml_attr(const std::string & name = std::string(), const boost::optional<std::string> & value = boost::optional<std::string>())
       : name(name), value(value) {}
 
@@ -80,11 +82,11 @@ public:
 
   unsigned short extra;
 
-
 public:
 
   srcml_node(const xmlNode & node);
   srcml_node(const srcml_node & node);
+  srcml_node(const std::string & text);
 
   ~srcml_node();
 

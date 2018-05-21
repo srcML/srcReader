@@ -118,6 +118,10 @@ srcml_node::srcml_node(const srcml_node & node)
 
 }
 
+srcml_node::srcml_node(const std::string & text)
+  : type(srcml_node_type::TEXT), name(), content(text), is_empty(true), extra(0) {}
+
+
 srcml_node::~srcml_node() {}
 
 bool srcml_node::operator==(const srcml_node & node) const {

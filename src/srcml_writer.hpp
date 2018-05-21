@@ -39,17 +39,17 @@ class srcml_writer {
 
 private:
     bool setup_archive(const srcml_node & node);
+    bool write_start_first(const srcml_node & node);
     bool write_start(const srcml_node & node);
     bool write_end(const srcml_node & node);
+    bool write_text_first(const srcml_node & node);
     bool write_text(const srcml_node & node);
     bool write_error(const srcml_node & node);
 
-
-    srcml_archive * archive;
     std::unordered_map<int, std::function<bool (const srcml_node & node)>> write_process_map = { 
         { srcml_node::srcml_node_type::START, std::bind(&srcml_writer::setup_archive, this, std::placeholders::_1) },
         { srcml_node::srcml_node_type::END, std::bind(&srcml_writer::write_end, this, std::placeholders::_1) },
-        { srcml_node::srcml_node_type::TEXT, std::bind(&srcml_writer::write_text, this, std::placeholders::_1) },
+        { srcml_node::srcml_node_type::TEXT, std::bind(&srcml_writer::write_text_first, this, std::placeholders::_1) },
         { srcml_node::srcml_node_type::OTHER, std::bind(&srcml_writer::write_error, this, std::placeholders::_1) },
     };
 
@@ -57,7 +57,11 @@ private:
 
     template<class... message_type>
     void check_srcml_error(int error_code, bool perform_cleanup, const message_type &... message);
+    void set_unit_attr(srcml_unit * unit, const std::list<srcml_node::srcml_attr> & properties);
 
+    srcml_archive * archive;
+    srcml_unit * unit;
+    std::string saved_characters;
 
 public:
     srcml_writer(const std::string & filename);
