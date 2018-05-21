@@ -30,7 +30,7 @@ private:
 
         if(author_reader) xmlTextReaderClose(author_reader);
         if(next_reader) xmlTextReaderClose(next_reader);
-        if(merged_reader) xmlTextWriterClose(merged_reader);
+        if(merged_reader) xmlTextWriterClose(merged_writer);
 
         if(error_message != std:string()) throw error_message;
 
