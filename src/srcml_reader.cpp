@@ -39,7 +39,7 @@ void srcml_reader::cleanup() {
 }
 
 srcml_reader::srcml_reader(const std::string & filename) 
-  : reader(nullptr), current_node() {
+  : reader(nullptr), current_node(), is_eof(false), iterator() {
 
   reader = xmlNewTextReaderFilename(filename.c_str());
   if(!reader) {
@@ -53,36 +53,61 @@ srcml_reader::~srcml_reader() {
   cleanup();
 }
 
-
-void srcml_reader::read() {
+bool srcml_reader::read() {
+  if(is_eof) return false;
 
   int success = xmlTextReaderRead(reader);
   if(success == -1) throw srcml_reader_error("Error reading file");
+  if(!success) {
+    is_eof = true;
+    current_node = std::unique_ptr<srcml_node>();
+    return false;
+  }
 
   xmlNodePtr node = xmlTextReaderCurrentNode(reader);
   if(!node) throw srcml_reader_error("Error getting current node");
 
   current_node = std::make_unique<srcml_node>(*node);
+  return true;
+}
+
+srcml_reader::srcml_reader_iterator srcml_reader::begin() {
+  if(!iterator.reader) {
+    read();
+    iterator = srcml_reader_iterator(this);
+  }
+
+  return iterator;
+}
+
+srcml_reader::srcml_reader_iterator srcml_reader::end() {
+  return srcml_reader_iterator();
+}
+
+srcml_reader::srcml_reader_iterator::srcml_reader_iterator(srcml_reader * reader)
+  : reader(reader) {}
+
+const srcml_node & srcml_reader::srcml_reader_iterator::operator*() const {
+
+  return *reader->current_node; 
 
 }
 
-const srcml_node & srcml_reader::operator*() {
+const srcml_node & srcml_reader::srcml_reader_iterator::operator++() {
 
-  return *current_node; 
-
-}
-
-const srcml_node & srcml_reader::operator++() {
-
-  read();
-  return *current_node;
+  reader->read();
+  return *reader->current_node;
 
 }
 
-srcml_node srcml_reader::operator++(int) {
+srcml_node srcml_reader::srcml_reader_iterator::operator++(int) {
 
-  srcml_node node = *current_node;
-  read();
+  srcml_node node = *reader->current_node;
+  reader->read();
   return node;
 
+}
+
+bool srcml_reader::srcml_reader_iterator::operator!=(const srcml_reader_iterator & that) const {
+  return reader->current_node != std::unique_ptr<srcml_node>();
 }

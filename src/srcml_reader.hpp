@@ -34,22 +34,40 @@
 class srcml_reader_error;
 
 class srcml_reader {
+public:
+      class srcml_reader_iterator {
+    private:
+      srcml_reader * reader;
+      srcml_reader_iterator(srcml_reader * reader = nullptr);
+    public:
 
+      const srcml_node & operator*() const;
+      const srcml_node & operator++();
+      srcml_node operator++(int);
+      bool operator!=(const srcml_reader_iterator & that) const;
+
+      friend srcml_reader;
+  };
 private:
 
     void cleanup();
+    bool read();
 
-    xmlTextReaderPtr  reader;
+    xmlTextReaderPtr reader;
     std::unique_ptr<srcml_node> current_node;
+    bool is_eof;
+
+    srcml_reader_iterator iterator;
 
 public:
     srcml_reader(const std::string & filename);
     ~srcml_reader();
-    void read();
 
-    const srcml_node & operator*();
-    const srcml_node & operator++();
-    srcml_node operator++(int);
+
+
+    srcml_reader_iterator begin();
+    srcml_reader_iterator end();
+
 };
 
 #endif
