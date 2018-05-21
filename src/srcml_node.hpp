@@ -74,6 +74,7 @@ public:
   std::string name;
   srcml_ns ns;
   boost::optional<std::string> content;
+  std::list<srcml_ns> ns_def;
   std::list<srcml_attr> properties;
   bool is_empty;
 
@@ -82,12 +83,7 @@ public:
 
 public:
 
-  srcml_node(const xmlNode & node, bool is_archive);
-
-  srcml_node(xmlElementType type = XML_ELEMENT_NODE, const std::string & name = std::string(), const srcml_ns & ns = srcml_ns(),
-    const boost::optional<std::string> & content = boost::optional<std::string>(), const std::list<srcml_attr> & properties = std::list<srcml_attr>(),
-    bool is_empty = false, unsigned short extra = 0);
-
+  srcml_node(const xmlNode & node);
   srcml_node(const srcml_node & node);
 
   ~srcml_node();

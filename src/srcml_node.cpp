@@ -23,11 +23,10 @@
 
 #include <srcml_node.hpp>
 
-#include <srcdiff_constants.hpp>
+#include <srcml.h>
 
 #include <iostream>
 #include <cstdlib>
-
 #include <cstring>
 #include <map>
 #include <vector>
@@ -35,8 +34,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include <shortest_edit_script.h>
-#include <srcml.h>
 
 #ifdef __MINGW32__
 #include <mingw32.hpp>
@@ -62,7 +59,26 @@ bool srcml_node::srcml_attr::operator!=(const srcml_attr & attr) const {
 
 }
 
-srcml_node::srcml_node(const xmlNode & node, bool is_archive) : type(node.type), ns(), extra(node.extra), is_empty(node.extra), free(false), move(0), is_simple(true) {
+srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
+  static std::unordered_map<unsigned int, srcml_node::srcml_node_type> type_map = {
+
+    { XML_READER_TYPE_ELEMENT, srcml_node::srcml_node_type::START },
+    { XML_READER_TYPE_END_ELEMENT, srcml_node::srcml_node_type::END },
+    { XML_READER_TYPE_TEXT, srcml_node::srcml_node_type::TEXT },
+    { XML_READER_TYPE_SIGNIFICANT_WHITESPACE, srcml_node::srcml_node_type::TEXT },
+
+  };
+
+  try {
+    return type_map.at((unsigned int)type);
+  } catch(const std::out_of_range & error) {
+    return srcml_node::srcml_node_type::OTHER;
+  }
+
+}
+
+srcml_node::srcml_node(const xmlNode & node) 
+  : type(xml_type2srcml_type(node.type)), name(), ns(), ns_def(), is_empty(node.extra), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 
@@ -79,87 +95,21 @@ srcml_node::srcml_node(const xmlNode & node, bool is_archive) : type(node.type),
   }
 
   xmlNsPtr node_ns = node.nsDef;
-  if(name == "unit" && node_ns) {
-
-    while(is_archive && node_ns && (const char *)node_ns->href != SRCML_CPP_NAMESPACE_HREF)
-        node_ns = node_ns->next;
-
-    if(!node_ns) goto end_ns_def;
-
-    std::string ns_name = "xmlns";
-    if(node_ns->prefix) {
-
-      ns_name += ":";
-      ns_name += (const char *)node_ns->prefix;
-
-    }
-
-    properties.emplace_back(ns_name, std::string((const char *)node_ns->href));
-
+  while(node_ns) {
+    ns_def.emplace_back(std::string((const char *)node_ns->prefix), std::string((const char *)node_ns->href));
     node_ns = node_ns->next;
-    while(!is_archive && node_ns) {
-
-      std::string ns_name = "xmlns";
-      if(node_ns->prefix) {
-
-        ns_name += ":";
-        ns_name += (const char *)node_ns->prefix;
-
-      }
-
-      properties.emplace_back(ns_name, std::string((const char *)node_ns->href));
-
-      node_ns = node_ns->next;
-
-    }
-
   }
-
-end_ns_def:
 
   xmlAttrPtr attribute = node.properties;
-  if(attribute) {
-
+  while (attribute) {
     properties.emplace_back(std::string((const char *)attribute->name), std::string((const char *)attribute->children->content));
-
     attribute = attribute->next;
-    while (attribute) {
-
-      properties.emplace_back(std::string((const char *)attribute->name), std::string((const char *)attribute->children->content));
-
-      attribute = attribute->next;
-
-    }
-
   }
 
 }
 
-xml_type2srcml_type(xmlElementType type) {
-  static std::unordered_map<xmlElementType, srcml_node_type> type_map = {
-
-    { XML_READER_TYPE_ELEMENT, srcml_node::srcml_node_type::START },
-    { XML_READER_TYPE_END_ELEMENT, srcml_node::srcml_node_type::END },
-    { XML_READER_TYPE_TEXT, srcml_node::srcml_node_type::TEXT },
-    { XML_READER_TYPE_SIGNIFICANT_WHITESPACE, srcml_node::srcml_node_type::TEXT },
-
-  };
-
-  try {
-    return type_map.at((xmlReaderTypes)type);
-  } catch(const std::out_of_range & error) {
-    return srcml_node::srcml_node_type::OTHER;
-  }
-
-}
-
-
-srcml_node::srcml_node(xmlElementType type, const std::string & name,  const srcml_ns & ns, const boost::optional<std::string> & content,
-const std::list<srcml_attr> & properties, unsigned short extra, const boost::optional<std::shared_ptr<srcml_node>> & parent, bool is_empty)
-  : type(xml_type2srcml_type(type)), name(name), ns(ns), content(content), properties(properties), extra(extra), parent(parent), is_empty(is_empty), free(false), move(0), is_simple(true) {}
-
-srcml_node::srcml_node(const srcml_node & node) : type(node.type), name(node.name), content(node.content), extra(node.extra),
-  parent(node.parent), is_empty(node.is_empty), free(true), move(0), is_simple(true) {
+srcml_node::srcml_node(const srcml_node & node) 
+  : type(node.type), name(node.name), content(node.content), is_empty(node.is_empty), extra(node.extra) {
 
   ns = node.ns;
 
@@ -180,5 +130,5 @@ bool srcml_node::operator==(const srcml_node & node) const {
 
 bool srcml_node::is_text() const {
 
-  return srcml_node_type::type == TEXT;
+  return type == srcml_node_type::TEXT;
 }
