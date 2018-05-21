@@ -46,7 +46,7 @@ public:
       srcml_node operator++(int);
       bool operator!=(const srcml_reader_iterator & that) const;
 
-      friend srcml_reader;
+      friend class srcml_reader;
   };
 private:
 

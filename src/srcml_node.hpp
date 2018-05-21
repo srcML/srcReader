@@ -84,6 +84,7 @@ public:
 
 public:
 
+  srcml_node();
   srcml_node(const xmlNode & node);
   srcml_node(const srcml_node & node);
   srcml_node(const std::string & text);
@@ -91,6 +92,7 @@ public:
   ~srcml_node();
 
   bool operator==(const srcml_node & node) const;
+  bool operator!=(const srcml_node & node) const;
 
   bool is_text() const;
 

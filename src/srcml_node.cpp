@@ -77,12 +77,15 @@ srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
 
 }
 
+srcml_node::srcml_node()
+  : type(srcml_node_type::OTHER), name(), ns(), ns_def(), is_empty(0), extra(0) {}
+
 srcml_node::srcml_node(const xmlNode & node) 
   : type(xml_type2srcml_type(node.type)), name(), ns(), ns_def(), is_empty(node.extra), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 
-  if(content)
+  if(node.content)
     content = std::string((const char *)node.content);
 
   if(node.ns) {
@@ -96,13 +99,15 @@ srcml_node::srcml_node(const xmlNode & node)
 
   xmlNsPtr node_ns = node.nsDef;
   while(node_ns) {
-    ns_def.emplace_back(std::string((const char *)node_ns->prefix), std::string((const char *)node_ns->href));
+    ns_def.emplace_back(std::string((const char *)node_ns->href),
+      node_ns->prefix ? std::string((const char *)node_ns->prefix) : boost::optional<std::string>());
     node_ns = node_ns->next;
   }
 
   xmlAttrPtr attribute = node.properties;
   while (attribute) {
-    properties.emplace_back(std::string((const char *)attribute->name), std::string((const char *)attribute->children->content));
+    properties.emplace_back(std::string((const char *)attribute->name),
+      attribute->children && attribute->children->content ? std::string((const char *)attribute->children->content) : boost::optional<std::string>());
     attribute = attribute->next;
   }
 
@@ -130,6 +135,10 @@ bool srcml_node::operator==(const srcml_node & node) const {
     && name == node.name
     && (((xmlReaderTypes)type != XML_READER_TYPE_TEXT && (xmlReaderTypes)type != XML_READER_TYPE_SIGNIFICANT_WHITESPACE)
       || (content == node.content && (!content || *content == *node.content)));
+}
+
+bool srcml_node::operator!=(const srcml_node & node) const {
+  return !operator==(node);
 }
 
 bool srcml_node::is_text() const {

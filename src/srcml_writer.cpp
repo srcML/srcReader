@@ -25,6 +25,8 @@
 
 #include <libxml/xmlwriter.h>
 
+#include <iostream>
+
 class srcml_writer_error : public std::runtime_error {
 public:
   srcml_writer_error(const std::string & what_arg) : std::runtime_error(what_arg) {}
@@ -88,6 +90,7 @@ void srcml_writer::set_unit_attr(srcml_unit * unit, const std::list<srcml_node::
   static std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>> unit_attr_map = {
     { "language", srcml_unit_set_language },
     { "filename", srcml_unit_set_filename },
+    { "revision", [](srcml_unit * unit, const char * str) { return SRCML_STATUS_OK; } },
   };
 
   for(const srcml_node::srcml_attr & attr : properties) {
@@ -104,21 +107,22 @@ void srcml_writer::set_unit_attr(srcml_unit * unit, const std::list<srcml_node::
 }
 
 bool srcml_writer::setup_archive(const srcml_node & node) {
-  const std::string CPP_NAMEPACE = "http://www.srcML.org/srcML/cpp";
+  const std::string SRC_NAMESPACE = "http://www.srcML.org/srcML/src";
+  const std::string CPP_NAMESPACE = "http://www.srcML.org/srcML/cpp";
 
-    unit = srcml_unit_create(archive);
-    if(!unit) throw srcml_writer_error("Failure creating srcML Unit");
+  unit = srcml_unit_create(archive);
+  if(!unit) throw srcml_writer_error("Failure creating srcML Unit");
 
   for(const srcml_node::srcml_ns & ns : node.ns_def) {
-    if(ns.href == CPP_NAMEPACE) continue;
-    check_srcml_error(srcml_archive_register_namespace(archive, node.ns.prefix ? node.ns.prefix->c_str() : 0, ns.href.c_str()),
+    if(ns.href == SRC_NAMESPACE || ns.href == CPP_NAMESPACE) continue;
+    check_srcml_error(srcml_archive_register_namespace(archive, ns.prefix ? ns.prefix->c_str() : 0, ns.href.c_str()),
                       false, "Error error registering namespace: ", ns.href.c_str());
   }
-
 
   set_unit_attr(unit, node.properties);
 
   write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start_first, this, std::placeholders::_1);
+
   return true;
 }
 

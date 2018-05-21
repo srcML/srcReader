@@ -60,7 +60,7 @@ bool srcml_reader::read() {
   if(success == -1) throw srcml_reader_error("Error reading file");
   if(!success) {
     is_eof = true;
-    current_node = std::unique_ptr<srcml_node>();
+    current_node = std::make_unique<srcml_node>(srcml_node());
     return false;
   }
 
@@ -72,9 +72,10 @@ bool srcml_reader::read() {
 }
 
 srcml_reader::srcml_reader_iterator srcml_reader::begin() {
+
   if(!iterator.reader) {
     read();
-    iterator = srcml_reader_iterator(this);
+    iterator.reader = this;
   }
 
   return iterator;
@@ -109,5 +110,5 @@ srcml_node srcml_reader::srcml_reader_iterator::operator++(int) {
 }
 
 bool srcml_reader::srcml_reader_iterator::operator!=(const srcml_reader_iterator & that) const {
-  return reader->current_node != std::unique_ptr<srcml_node>();
+  return *reader->current_node != srcml_node();
 }
