@@ -1,0 +1,88 @@
+/*
+  srcml_reader.cpp
+
+  Copyright (C) 2018 srcML, LLC. (www.srcML.org)
+
+  This file is part of a translator from source code to srcMLIdentify
+
+  srcIdentity is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  srcMLIdentify is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with the srcML translator; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*/
+
+#include <srcml_reader.hpp>
+
+class srcml_reader_error : public std::runtime_error {
+public:
+  srcml_reader_error(const std::string & what_arg) : std::runtime_error(what_arg) {}
+
+};
+
+void srcml_reader::cleanup() {
+
+  if(reader) {
+    xmlTextReaderClose(reader);
+    reader = nullptr;
+  }
+
+}
+
+srcml_reader::srcml_reader(const std::string & filename) 
+  : reader(nullptr), current_node() {
+
+  reader = xmlNewTextReaderFilename(filename.c_str());
+  if(!reader) {
+    cleanup();
+    throw srcml_reader_error("Error openining: " + filename);
+  }
+
+}
+
+srcml_reader::~srcml_reader() {
+  cleanup();
+}
+
+
+void srcml_reader::read() {
+
+  int success = xmlTextReaderRead(reader);
+  if(success == -1) throw srcml_reader_error("Error reading file");
+
+  xmlNodePtr node = xmlTextReaderCurrentNode(reader);
+  if(!node) throw srcml_reader_error("Error getting current node");
+
+  current_node = std::make_unique<srcml_node>(*node);
+
+}
+
+const srcml_node & srcml_reader::operator*() {
+
+  return *current_node; 
+
+}
+
+const srcml_node & srcml_reader::operator++() {
+
+  read();
+  return *current_node;
+
+}
+
+srcml_node srcml_reader::operator++(int) {
+
+  srcml_node node = *current_node;
+  read();
+  return node;
+
+}

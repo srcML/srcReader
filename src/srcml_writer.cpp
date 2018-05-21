@@ -101,7 +101,6 @@ void srcml_writer::set_unit_attr(srcml_unit * unit, const std::list<srcml_node::
 
   }
 
-
 }
 
 bool srcml_writer::setup_archive(const srcml_node & node) {
