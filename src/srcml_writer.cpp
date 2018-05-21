@@ -46,7 +46,7 @@ void srcml_writer::check_srcml_error(int error_code, bool perform_cleanup, const
   if(perform_cleanup) cleanup();
 
   std::string error_message;
-  for(const std::string & msg : {message...}) {
+  for(const std::string & msg : { message... }) {
     error_message += msg;
   }
 
@@ -77,6 +77,21 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
   for(const srcml_node::srcml_ns & ns : node.ns_def) {
     check_srcml_error(srcml_archive_register_namespace(archive, node.ns.prefix ? node.ns.prefix->c_str() : 0, ns.href.c_str()),
                      false, "Error error registering namespace: ", ns.href.c_str());
+  }
+
+  static std::unordered_map<std::string, std::function<int (srcml_archive *, const char *)>> attr_map = {
+    { "language", srcml_archive_set_language },
+    { "url", srcml_archive_set_url },
+  } ;
+
+  for(const srcml_node::srcml_attr & attr : node.properties) {
+
+    try {
+      check_srcml_error(attr_map[attr.name](archive, attr.value ? attr.value->c_str() : 0), false, "Error setting archive", attr.name.c_str());
+    } catch(const std::out_of_range & error) {
+      throw srcml_writer_error("Unimplemented archive attribute: " + attr.name);      
+    }
+
   }
 
   write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start, this, std::placeholders::_1);
