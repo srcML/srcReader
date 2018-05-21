@@ -55,6 +55,9 @@ private:
 
     void cleanup();
 
+    template<class... message_type>
+    void check_srcml_error(int error_code, bool perform_cleanup, const message_type &... message);
+
 
 public:
     srcml_writer(const std::string & filename);
