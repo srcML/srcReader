@@ -23,6 +23,8 @@
 
 #include <srcml_reader.hpp>
 
+#include <iostream>
+
 class srcml_reader_error : public std::runtime_error {
 public:
   srcml_reader_error(const std::string & what_arg) : std::runtime_error(what_arg) {}
@@ -66,6 +68,8 @@ bool srcml_reader::read() {
 
   xmlNodePtr node = xmlTextReaderCurrentNode(reader);
   if(!node) throw srcml_reader_error("Error getting current node");
+
+  node->type = (xmlElementType) xmlTextReaderNodeType(reader);
 
   current_node = std::make_unique<srcml_node>(*node);
   return true;

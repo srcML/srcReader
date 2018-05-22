@@ -21,6 +21,8 @@
 
 */
 
+#include <srcml_types.hpp>
+
 #include <srcml_writer.hpp>
 
 #include <libxml/xmlwriter.h>
@@ -49,7 +51,7 @@ void srcml_writer::cleanup() {
 template<class... message_type>
 void srcml_writer::check_srcml_error(int error_code, bool perform_cleanup, const message_type &... message) {
   if(error_code == SRCML_STATUS_OK) return;
-  
+
   if(perform_cleanup) cleanup();
 
   std::string error_message;
@@ -67,7 +69,7 @@ srcml_writer::srcml_writer(const std::string & filename)
     archive = srcml_archive_create();
     if(!archive) throw srcml_writer_error("Failure creating srcML Archive");
     check_srcml_error(srcml_archive_write_open_filename(archive, filename.c_str(), 0), true, "Unable to open: ", filename.c_str());
-
+    check_srcml_error(srcml_archive_disable_full_archive(archive), false, "Error disabling archive");
 }
 
 srcml_writer::~srcml_writer() {
@@ -131,15 +133,14 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
   write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start, this, std::placeholders::_1);
   write_process_map[srcml_node::srcml_node_type::TEXT] = std::bind(&srcml_writer::write_text, this, std::placeholders::_1);
 
-  if(node.name != "unit") {
+  if(node.name != "unit") {  
+    check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
     write_process_map[srcml_node::srcml_node_type::TEXT](srcml_node(saved_characters));
-    write_process_map[srcml_node::srcml_node_type::START](node);
-    return true;
+  } else {
+    check_srcml_error(srcml_archive_enable_full_archive(archive), false, "Error enabling archive");
   }
 
-  check_srcml_error(srcml_archive_enable_full_archive(archive), false, "Error enabling archive");
-
-  set_unit_attr(unit, node.properties);
+  write_process_map[srcml_node::srcml_node_type::START](node);
 
   return true;
 
@@ -148,7 +149,8 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
 bool srcml_writer::write_start(const srcml_node & node) {
 
   if(node.name != "unit") {
-    srcml_write_start_element(unit, node.ns.prefix ? node.ns.prefix->c_str() : 0, node.name.c_str(), 0);
+    check_srcml_error(srcml_write_start_element(unit, node.ns.prefix ? node.ns.prefix->c_str() : 0, node.name.c_str(), 0),
+                      false, "Error writing start tag");
 
     for(const srcml_node::srcml_ns ns : node.ns_def) {
       check_srcml_error(srcml_write_namespace(unit, ns.prefix ? ns.prefix->c_str() : 0, ns.href.c_str()), "Error writing namespace", ns.href.c_str());
@@ -159,6 +161,7 @@ bool srcml_writer::write_start(const srcml_node & node) {
     }
 
   } else {
+    check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
     set_unit_attr(unit, node.properties);
   }
 
@@ -169,11 +172,13 @@ bool srcml_writer::write_start(const srcml_node & node) {
 bool srcml_writer::write_end(const srcml_node & node) {
 
   if(node.name != "unit") {
-    srcml_write_end_element(unit);
+    check_srcml_error(srcml_write_end_element(unit), false, "Error writing end tag");
     return true;
   }
 
+  check_srcml_error(srcml_write_end_unit(unit), false, "Error ending unit");
   check_srcml_error(srcml_archive_write_unit(archive, unit), false, "Error writing unit");
+
   srcml_unit_free(unit);
   unit = srcml_unit_create(archive);
   if(!unit) throw srcml_writer_error("Error creating unit");
@@ -191,7 +196,7 @@ bool srcml_writer::write_text_first(const srcml_node & node) {
 }
 
 bool srcml_writer::write_text(const srcml_node & node) {
-  srcml_write_string(unit, node.content ? node.content->c_str() : 0);
+  check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
   return true;
 }
 
