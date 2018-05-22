@@ -65,6 +65,8 @@ public:
     srcml_attr(const std::string & name = std::string(), const boost::optional<std::string> & value = boost::optional<std::string>())
       : name(name), value(value) {}
 
+    srcml_attr(const srcml_ns & ns);
+
     bool operator==(const srcml_attr & attr) const;
     bool operator!=(const srcml_attr & attr) const;
 
@@ -78,6 +80,7 @@ public:
   boost::optional<std::string> content;
   std::list<srcml_ns> ns_def;
   std::list<srcml_attr> properties;
+  std::map<std::string, boost::optional<std::string>> attributes;
   bool is_empty;
 
   unsigned short extra;
