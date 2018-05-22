@@ -21,8 +21,6 @@
 
 */
 
-#include <srcml_types.hpp>
-
 #include <srcml_writer.hpp>
 
 #include <libxml/xmlwriter.h>
