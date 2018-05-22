@@ -63,8 +63,6 @@ public:
     srcml_reader(const std::string & filename);
     ~srcml_reader();
 
-
-
     srcml_reader_iterator begin();
     srcml_reader_iterator end();
 
