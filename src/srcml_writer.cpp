@@ -62,7 +62,7 @@ void srcml_writer::check_srcml_error(int error_code, bool perform_cleanup, const
 
 
 srcml_writer::srcml_writer(const std::string & filename)
-  : archive(nullptr), unit(nullptr), saved_characters() {
+  : archive(nullptr), unit(nullptr), saved_characters(), in_unit(true) {
 
     archive = srcml_archive_create();
     if(!archive) throw srcml_writer_error("Failure creating srcML Archive");
@@ -130,7 +130,7 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
   write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start, this, std::placeholders::_1);
   write_process_map[srcml_node::srcml_node_type::TEXT] = std::bind(&srcml_writer::write_text, this, std::placeholders::_1);
 
-  if(node.name != "unit") {  
+  if(node.name != "unit") {
     check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
     write_process_map[srcml_node::srcml_node_type::TEXT](srcml_node(saved_characters));
   } else {
@@ -162,6 +162,7 @@ bool srcml_writer::write_start(const srcml_node & node) {
     }
 
   } else {
+    in_unit = true;
     check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
     set_unit_attr(unit, node.attributes);
   }
@@ -177,10 +178,13 @@ bool srcml_writer::write_end(const srcml_node & node) {
     return true;
   }
 
+  if(!in_unit) return true;
+
   check_srcml_error(srcml_write_end_unit(unit), false, "Error ending unit");
   check_srcml_error(srcml_archive_write_unit(archive, unit), false, "Error writing unit");
-
   srcml_unit_free(unit);
+  in_unit = false;
+
   unit = srcml_unit_create(archive);
   if(!unit) throw srcml_writer_error("Error creating unit");
 
@@ -197,7 +201,7 @@ bool srcml_writer::write_text_first(const srcml_node & node) {
 }
 
 bool srcml_writer::write_text(const srcml_node & node) {
-  check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
+  if(in_unit) check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
   return true;
 }
 

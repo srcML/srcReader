@@ -62,6 +62,7 @@ private:
     srcml_archive * archive;
     srcml_unit * unit;
     std::string saved_characters;
+    bool in_unit;
 
 public:
     srcml_writer(const std::string & filename);
