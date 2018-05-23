@@ -94,8 +94,7 @@ std::shared_ptr<srcml_node::srcml_namespace> srcml_node::get_namespace(xmlNsPtr 
   if(citr != namespaces.end()) return citr->second;
 
   namespaces_citr added_citr = namespaces.emplace(std::make_pair((const char *)ns->href, std::make_shared<srcml_namespace>(ns))).first;
-
-  return citr->second;
+  return added_citr->second;
 }
 
 
