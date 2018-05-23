@@ -113,8 +113,8 @@ std::shared_ptr<srcml_node::srcml_namespace> srcml_node::get_namespace(xmlNsPtr 
 srcml_node::srcml_node()
   : type(srcml_node_type::OTHER), name(), ns(), content(), ns_definition(), attributes(), is_empty(false), extra(0) {}
 
-srcml_node::srcml_node(const xmlNode & node) 
-  : type(xml_type2srcml_type(node.type)), name(), ns(), content(), ns_definition(), attributes(), is_empty(node.extra), extra(node.extra) {
+srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type) 
+  : type(xml_type2srcml_type(xml_type)), name(), ns(), content(), ns_definition(), attributes(), is_empty(node.extra), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 
