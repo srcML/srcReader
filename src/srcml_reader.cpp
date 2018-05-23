@@ -69,7 +69,9 @@ bool srcml_reader::read() {
   xmlNodePtr node = xmlTextReaderCurrentNode(reader);
   if(!node) throw srcml_reader_error("Error getting current node");
 
-  node->type = (xmlElementType) xmlTextReaderNodeType(reader);
+  int type = xmlTextReaderNodeType(reader);
+  if(type == -1) srcml_reader_error("Error getting node type");
+  node->type = (xmlElementType)type;
 
   current_node = std::make_unique<srcml_node>(*node);
   return true;
