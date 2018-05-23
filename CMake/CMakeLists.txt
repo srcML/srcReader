@@ -18,9 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with srcMLTextReader.  If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 2.8)
-project(srcMLTextReader)
+# add this directory
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-enable_testing()
-
-add_subdirectory(CMake)
+include(srcml_text_reader_build)
+if(CMAKE_PROJECT_NAME STREQUAL "srcMLTextReader")
+    include(srcml_text_reader_install)
+endif()

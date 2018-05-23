@@ -1,5 +1,5 @@
 ##
-# @file CMakeLists.txt
+# @file srcml_text_reader_install.cmake
 #
 # Copyright (C) 2018 srcML, LLC. (www.srcML.org)
 #
@@ -18,9 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with srcMLTextReader.  If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 2.8)
-project(srcMLTextReader)
+if(NOT WIN32)
+set(CMAKE_INSTALL_PREFIX "/usr/local")
+endif()
 
-enable_testing()
-
-add_subdirectory(CMake)
