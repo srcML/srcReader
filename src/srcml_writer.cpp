@@ -86,11 +86,13 @@ bool srcml_writer::write(const srcml_node & node) {
 
 void srcml_writer::set_unit_attr(srcml_unit * unit, const srcml_node::srcml_attribute_map & attributes) {
 
+  static std::function<int (srcml_unit *, const char *)> no_op = [](srcml_unit * unit, const char * str) { return SRCML_STATUS_OK; };
   typedef std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>>::const_iterator unit_attr_map_citr;
   static std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>> unit_attr_map = {
     { "language", srcml_unit_set_language },
     { "filename", srcml_unit_set_filename },
-    { "revision", [](srcml_unit * unit, const char * str) { return SRCML_STATUS_OK; } },
+    { "hash"    , no_op },
+    { "revision", no_op },
   };
 
   for(const srcml_node::srcml_attribute_map_pair & attr : attributes) {
