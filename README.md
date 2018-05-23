@@ -1,4 +1,4 @@
-### srcIdentify
+### srcMLTextReader
 
-The Bourne Identity of code (i.e., code authorship tool).
+C++ implementation of libxml2's xmlTextReader interface for srcML.
 
