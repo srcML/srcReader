@@ -65,17 +65,14 @@ srcml_node::srcml_namespace::srcml_namespace(const srcml_namespace & ns) : uri(n
 srcml_node::srcml_attribute::srcml_attribute(xmlAttrPtr attribute)
   : name((const char *)attribute->name),
     value(attribute->children && attribute->children->content ? 
-          std::string((const char *)attribute->children->content) : boost::optional<std::string>()) {}
+          std::string((const char *)attribute->children->content) : boost::optional<std::string>()),
+    ns(get_namespace(attribute->ns)) {}
 
-srcml_node::srcml_attribute::srcml_attribute(const srcml_attribute & attr) : name(attr.name), value(attr.value) {}
+srcml_node::srcml_attribute::srcml_attribute(const srcml_attribute & attribute)
+  : name(attribute.name), value(attribute.value), ns(attribute.ns) {}
 
 bool srcml_node::srcml_attribute::operator==(const srcml_attribute & that) const {
-
-  if(name != that.name) return false;
-  if(value == that.value && (!value || *value == *that.value)) return true;
-
-  return false;
-
+  return ns == that.ns && name == that.name && value == that.value;
 }
 
 bool srcml_node::srcml_attribute::operator!=(const srcml_attribute & that) const {
@@ -102,6 +99,9 @@ srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
 
 std::shared_ptr<srcml_node::srcml_namespace> srcml_node::get_namespace(xmlNsPtr ns) {
   typedef  std::unordered_map<std::string, std::shared_ptr<srcml_namespace>>::const_iterator namespaces_citr;
+
+  if(!ns) return SRC_NAMESPACE;
+
   namespaces_citr citr = namespaces.find((const char *)ns->href);
   if(citr != namespaces.end()) return citr->second;
 
@@ -121,7 +121,7 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
   if(node.content)
     content = std::string((const char *)node.content);
 
-  if(node.ns) ns = get_namespace(node.ns);
+  ns = get_namespace(node.ns);
 
   xmlNsPtr node_ns = node.nsDef;
   while(node_ns) {

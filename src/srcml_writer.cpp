@@ -152,7 +152,11 @@ bool srcml_writer::write_start(const srcml_node & node) {
     }
 
     for(const srcml_node::srcml_attribute_map_pair & attr : node.attributes) {
-      check_srcml_error(srcml_write_attribute(unit, 0, attr.first.c_str(), 0, attr.second.value ? attr.second.value->c_str() : 0), "Error writing attribute", attr.first.c_str());
+      check_srcml_error(srcml_write_attribute(unit, attr.second.ns->prefix ? attr.second.ns->prefix->c_str() : 0,
+                                                    attr.first.c_str(),
+                                                    attr.second.ns->uri.c_str(),
+                                                    attr.second.value ? attr.second.value->c_str() : 0),
+                        "Error writing attribute", attr.first.c_str());
     }
 
   } else {

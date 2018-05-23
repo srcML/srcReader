@@ -61,8 +61,7 @@ public:
 
     std::string name;
     boost::optional<std::string> value;
-
-    /** @TODO add attr namespaces */
+    std::shared_ptr<srcml_namespace> ns;
 
     srcml_attribute(xmlAttrPtr attribute);
     srcml_attribute(const srcml_attribute & attribute);
