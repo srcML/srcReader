@@ -29,6 +29,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <memory>
 
 #include <boost/optional.hpp>
@@ -47,9 +48,7 @@ public:
     std::string uri;
     boost::optional<std::string> prefix;
 
-    srcml_namespace(const std::string & uri = std::string(), const boost::optional<std::string> & prefix = boost::optional<std::string>())
-      : uri(uri), prefix(prefix) {}
-
+    srcml_namespace(xmlNsPtr ns = nullptr);
     srcml_namespace(const srcml_namespace & ns);
 
   };
@@ -78,15 +77,19 @@ public:
 
   srcml_node_type type;
   std::string name;
-  srcml_namespace ns;
+  std::shared_ptr<srcml_namespace> ns;
   boost::optional<std::string> content;
-  std::list<srcml_namespace> ns_definition;
+  std::list<std::shared_ptr<srcml_namespace>> ns_definition;
   srcml_attribute_map attributes;
   bool is_empty;
 
   unsigned short extra;
 
+  static std::unordered_map<std::string, std::shared_ptr<srcml_namespace>> namespaces;
+  static std::shared_ptr<srcml_namespace> get_namespace(xmlNsPtr ns);
+
 public:
+
 
   srcml_node();
   srcml_node(const xmlNode & node);

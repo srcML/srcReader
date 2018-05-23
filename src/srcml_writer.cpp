@@ -113,10 +113,10 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
   unit = srcml_unit_create(archive);
   if(!unit) throw srcml_writer_error("Failure creating srcML Unit");
 
-  for(const srcml_node::srcml_namespace & ns : node.ns_definition) {
-    if(ns.uri == SRC_NAMESPACE || ns.uri == CPP_NAMESPACE) continue;
-    check_srcml_error(srcml_archive_register_namespace(archive, ns.prefix ? ns.prefix->c_str() : 0, ns.uri.c_str()),
-                      false, "Error error registering namespace: ", ns.uri.c_str());
+  for(const std::shared_ptr<srcml_node::srcml_namespace> & ns : node.ns_definition) {
+    if(ns->uri == SRC_NAMESPACE || ns->uri == CPP_NAMESPACE) continue;
+    check_srcml_error(srcml_archive_register_namespace(archive, ns->prefix ? ns->prefix->c_str() : 0, ns->uri.c_str()),
+                      false, "Error error registering namespace: ", ns->uri.c_str());
   }
 
   set_unit_attr(unit, node.attributes);
@@ -147,11 +147,11 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
 bool srcml_writer::write_start(const srcml_node & node) {
 
   if(node.name != "unit") {
-    check_srcml_error(srcml_write_start_element(unit, node.ns.prefix ? node.ns.prefix->c_str() : 0, node.name.c_str(), 0),
+    check_srcml_error(srcml_write_start_element(unit, node.ns->prefix ? node.ns->prefix->c_str() : 0, node.name.c_str(), 0),
                       false, "Error writing start tag");
 
-    for(const srcml_node::srcml_namespace ns : node.ns_definition) {
-      check_srcml_error(srcml_write_namespace(unit, ns.prefix ? ns.prefix->c_str() : 0, ns.uri.c_str()), "Error writing namespace", ns.uri.c_str());
+    for(const std::shared_ptr<srcml_node::srcml_namespace> ns : node.ns_definition) {
+      check_srcml_error(srcml_write_namespace(unit, ns->prefix ? ns->prefix->c_str() : 0, ns->uri.c_str()), "Error writing namespace", ns->uri.c_str());
     }
 
     for(const srcml_node::srcml_attribute_map_pair & attr : node.attributes) {

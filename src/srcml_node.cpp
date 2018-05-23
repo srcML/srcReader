@@ -34,10 +34,19 @@
 #include <algorithm>
 #include <unordered_map>
 
-
 #ifdef __MINGW32__
 #include <mingw32.hpp>
 #endif
+
+std::unordered_map<std::string, std::shared_ptr<srcml_node::srcml_namespace>> srcml_node::namespaces;
+
+srcml_node::srcml_namespace::srcml_namespace(xmlNsPtr ns) : uri(), prefix() {
+
+    if(!ns) return;
+
+    if(ns->href)   uri = std::string((const char *)ns->href);
+    if(ns->prefix) prefix = std::string((const char *)ns->prefix);
+}
 
 srcml_node::srcml_namespace::srcml_namespace(const srcml_namespace & ns) : uri(ns.uri), prefix(ns.prefix) {}
 
@@ -79,6 +88,17 @@ srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
 
 }
 
+std::shared_ptr<srcml_node::srcml_namespace> srcml_node::get_namespace(xmlNsPtr ns) {
+  typedef  std::unordered_map<std::string, std::shared_ptr<srcml_namespace>>::const_iterator namespaces_citr;
+  namespaces_citr citr = namespaces.find((const char *)ns->href);
+  if(citr != namespaces.end()) return citr->second;
+
+  namespaces_citr added_citr = namespaces.emplace(std::make_pair((const char *)ns->href, std::make_shared<srcml_namespace>(ns))).first;
+
+  return citr->second;
+}
+
+
 srcml_node::srcml_node()
   : type(srcml_node_type::OTHER), name(), ns(), content(), ns_definition(), attributes(), is_empty(false), extra(0) {}
 
@@ -90,19 +110,11 @@ srcml_node::srcml_node(const xmlNode & node)
   if(node.content)
     content = std::string((const char *)node.content);
 
-  if(node.ns) {
-
-    if(node.ns->href)
-      ns.uri = std::string((const char *)node.ns->href);
-
-    if(node.ns->prefix)
-      ns.prefix = std::string((const char *)node.ns->prefix);
-  }
+  if(node.ns) ns = get_namespace(node.ns);
 
   xmlNsPtr node_ns = node.nsDef;
   while(node_ns) {
-    ns_definition.emplace_back(std::string((const char *)node_ns->href),
-      node_ns->prefix ? std::string((const char *)node_ns->prefix) : boost::optional<std::string>());
+    ns_definition.emplace_back(get_namespace(node_ns));
     node_ns = node_ns->next;
   }
 
