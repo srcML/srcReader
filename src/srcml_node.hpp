@@ -94,7 +94,6 @@ public:
 
 public:
 
-
   srcml_node();
   srcml_node(const xmlNode & node);
   srcml_node(const srcml_node & node);
