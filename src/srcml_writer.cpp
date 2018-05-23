@@ -201,7 +201,10 @@ bool srcml_writer::write_text_first(const srcml_node & node) {
 }
 
 bool srcml_writer::write_text(const srcml_node & node) {
-  if(in_unit) check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
+  if(!node.content) return true;
+  if(!in_unit) return true;
+
+  check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
   return true;
 }
 
