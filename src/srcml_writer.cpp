@@ -84,7 +84,7 @@ bool srcml_writer::write(const srcml_node & node) {
 //     { "url", srcml_archive_set_url },
 // };
 
-void srcml_writer::set_unit_attr(srcml_unit * unit, const std::list<srcml_node::srcml_attr> & properties) {
+void srcml_writer::set_unit_attr(srcml_unit * unit, const srcml_node::srcml_attr_map & attributes) {
 
   typedef std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>>::const_iterator unit_attr_map_citr;
   static std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>> unit_attr_map = {
@@ -93,13 +93,13 @@ void srcml_writer::set_unit_attr(srcml_unit * unit, const std::list<srcml_node::
     { "revision", [](srcml_unit * unit, const char * str) { return SRCML_STATUS_OK; } },
   };
 
-  for(const srcml_node::srcml_attr & attr : properties) {
+  for(const srcml_node::srcml_attr_map_pair & attr : attributes) {
 
-    unit_attr_map_citr citr = unit_attr_map.find(attr.name);
+    unit_attr_map_citr citr = unit_attr_map.find(attr.first);
     if(citr != unit_attr_map.end()) {
-      check_srcml_error(unit_attr_map[attr.name](unit, attr.value ? attr.value->c_str() : 0), false, "Error setting archive", attr.name.c_str());
+      check_srcml_error(unit_attr_map[attr.first](unit, attr.second.value ? attr.second.value->c_str() : 0), false, "Error setting archive", attr.first.c_str());
     } else {
-      throw srcml_writer_error("Unimplemented attribute: " + attr.name);
+      throw srcml_writer_error("Unimplemented attribute: " + attr.first);
     }
 
   }
@@ -119,7 +119,7 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
                       false, "Error error registering namespace: ", ns.href.c_str());
   }
 
-  set_unit_attr(unit, node.properties);
+  set_unit_attr(unit, node.attributes);
 
   write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start_first, this, std::placeholders::_1);
 
@@ -154,13 +154,13 @@ bool srcml_writer::write_start(const srcml_node & node) {
       check_srcml_error(srcml_write_namespace(unit, ns.prefix ? ns.prefix->c_str() : 0, ns.href.c_str()), "Error writing namespace", ns.href.c_str());
     }
 
-    for(const srcml_node::srcml_attr attr : node.properties) {
-      check_srcml_error(srcml_write_attribute(unit, 0, attr.name.c_str(), 0, attr.value ? attr.value->c_str() : 0), "Error writing attribute", attr.name.c_str());
+    for(const srcml_node::srcml_attr_map_pair & attr : node.attributes) {
+      check_srcml_error(srcml_write_attribute(unit, 0, attr.first.c_str(), 0, attr.second.value ? attr.second.value->c_str() : 0), "Error writing attribute", attr.first.c_str());
     }
 
   } else {
     check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
-    set_unit_attr(unit, node.properties);
+    set_unit_attr(unit, node.attributes);
   }
 
   if(node.is_empty) write_process_map[srcml_node::srcml_node_type::END](node);

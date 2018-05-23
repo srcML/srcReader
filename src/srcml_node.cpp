@@ -40,6 +40,12 @@
 #endif
 
 srcml_node::srcml_ns::srcml_ns(const srcml_ns & ns) : href(ns.href), prefix(ns.prefix) {}
+
+srcml_node::srcml_attr::srcml_attr(xmlAttrPtr attribute)
+  : name((const char *)attribute->name),
+    value(attribute->children && attribute->children->content ? 
+          std::string((const char *)attribute->children->content) : boost::optional<std::string>()) {}
+
 srcml_node::srcml_attr::srcml_attr(const srcml_attr & attr) : name(attr.name), value(attr.value) {}
 
 bool srcml_node::srcml_attr::operator==(const srcml_attr & attr) const {
@@ -75,10 +81,10 @@ srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
 }
 
 srcml_node::srcml_node()
-  : type(srcml_node_type::OTHER), name(), ns(), content(), ns_def(), properties(), attributes(), is_empty(0), extra(0) {}
+  : type(srcml_node_type::OTHER), name(), ns(), content(), ns_def(), attributes(), is_empty(0), extra(0) {}
 
 srcml_node::srcml_node(const xmlNode & node) 
-  : type(xml_type2srcml_type(node.type)), name(), ns(), content(), ns_def(), properties(), attributes(), is_empty(node.extra), extra(node.extra) {
+  : type(xml_type2srcml_type(node.type)), name(), ns(), content(), ns_def(), attributes(), is_empty(node.extra), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 
@@ -103,21 +109,15 @@ srcml_node::srcml_node(const xmlNode & node)
 
   xmlAttrPtr attribute = node.properties;
   while (attribute) {
-    properties.emplace_back(std::string((const char *)attribute->name),
-      attribute->children && attribute->children->content ? std::string((const char *)attribute->children->content) : boost::optional<std::string>());
+    attributes.emplace(std::make_pair(std::string((const char *)attribute->name), srcml_attr(attribute)));
     attribute = attribute->next;
   }
 
 }
 
 srcml_node::srcml_node(const srcml_node & node) 
-  : type(node.type), name(node.name), ns(node.ns), content(node.content), ns_def(node.ns_def), properties(node.properties),
-    attributes(node.attributes), is_empty(node.is_empty), extra(node.extra) {
-
-  for(const srcml_attr & attr : node.properties)
-    properties.push_back(attr);
-
-}
+  : type(node.type), name(node.name), ns(node.ns), content(node.content), ns_def(node.ns_def),
+    attributes(node.attributes), is_empty(node.is_empty), extra(node.extra) {}
 
 srcml_node::srcml_node(const std::string & text)
   : type(srcml_node_type::TEXT), name(), content(text), is_empty(true), extra(0) {}

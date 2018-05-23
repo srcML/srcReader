@@ -57,7 +57,7 @@ private:
 
     template<class... message_type>
     void check_srcml_error(int error_code, bool perform_cleanup, const message_type &... message);
-    void set_unit_attr(srcml_unit * unit, const std::list<srcml_node::srcml_attr> & properties);
+    void set_unit_attr(srcml_unit * unit, const srcml_node::srcml_attr_map & attributes);
 
     srcml_archive * archive;
     srcml_unit * unit;

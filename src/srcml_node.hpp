@@ -28,6 +28,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 #include <memory>
 
 #include <boost/optional.hpp>
@@ -62,10 +63,8 @@ public:
 
     /** @TODO add attr namespaces */
 
-    srcml_attr(const std::string & name = std::string(), const boost::optional<std::string> & value = boost::optional<std::string>())
-      : name(name), value(value) {}
-
-    srcml_attr(const srcml_ns & ns);
+    srcml_attr(xmlAttrPtr attribute);
+    srcml_attr(const srcml_attr & attr);
 
     bool operator==(const srcml_attr & attr) const;
     bool operator!=(const srcml_attr & attr) const;
@@ -74,13 +73,15 @@ public:
 
   enum srcml_node_type : unsigned int  { OTHER = 0, START = 1, END = 2, TEXT = 3 };
 
+  typedef std::map<std::string, srcml_attr> srcml_attr_map;
+  typedef std::pair<std::string, srcml_attr> srcml_attr_map_pair;
+
   srcml_node_type type;
   std::string name;
   srcml_ns ns;
   boost::optional<std::string> content;
   std::list<srcml_ns> ns_def;
-  std::list<srcml_attr> properties;
-  std::map<std::string, boost::optional<std::string>> attributes;
+  srcml_attr_map attributes;
   bool is_empty;
 
   unsigned short extra;
