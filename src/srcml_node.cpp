@@ -39,27 +39,26 @@
 #include <mingw32.hpp>
 #endif
 
-srcml_node::srcml_ns::srcml_ns(const srcml_ns & ns) : href(ns.href), prefix(ns.prefix) {}
+srcml_node::srcml_namespace::srcml_namespace(const srcml_namespace & ns) : uri(ns.uri), prefix(ns.prefix) {}
 
-srcml_node::srcml_attr::srcml_attr(xmlAttrPtr attribute)
+srcml_node::srcml_attribute::srcml_attribute(xmlAttrPtr attribute)
   : name((const char *)attribute->name),
     value(attribute->children && attribute->children->content ? 
           std::string((const char *)attribute->children->content) : boost::optional<std::string>()) {}
 
-srcml_node::srcml_attr::srcml_attr(const srcml_attr & attr) : name(attr.name), value(attr.value) {}
+srcml_node::srcml_attribute::srcml_attribute(const srcml_attribute & attr) : name(attr.name), value(attr.value) {}
 
-bool srcml_node::srcml_attr::operator==(const srcml_attr & attr) const {
+bool srcml_node::srcml_attribute::operator==(const srcml_attribute & that) const {
 
-  if(name != attr.name) return false;
-
-  if(value == attr.value && (!value || *value == *attr.value)) return true;
+  if(name != that.name) return false;
+  if(value == that.value && (!value || *value == *that.value)) return true;
 
   return false;
 
 }
 
-bool srcml_node::srcml_attr::operator!=(const srcml_attr & attr) const {
-  return !this->operator==(attr);
+bool srcml_node::srcml_attribute::operator!=(const srcml_attribute & that) const {
+  return !this->operator==(that);
 }
 
 srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
@@ -81,10 +80,10 @@ srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
 }
 
 srcml_node::srcml_node()
-  : type(srcml_node_type::OTHER), name(), ns(), content(), ns_def(), attributes(), is_empty(0), extra(0) {}
+  : type(srcml_node_type::OTHER), name(), ns(), content(), ns_definition(), attributes(), is_empty(false), extra(0) {}
 
 srcml_node::srcml_node(const xmlNode & node) 
-  : type(xml_type2srcml_type(node.type)), name(), ns(), content(), ns_def(), attributes(), is_empty(node.extra), extra(node.extra) {
+  : type(xml_type2srcml_type(node.type)), name(), ns(), content(), ns_definition(), attributes(), is_empty(node.extra), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 
@@ -94,7 +93,7 @@ srcml_node::srcml_node(const xmlNode & node)
   if(node.ns) {
 
     if(node.ns->href)
-      ns.href = std::string((const char *)node.ns->href);
+      ns.uri = std::string((const char *)node.ns->href);
 
     if(node.ns->prefix)
       ns.prefix = std::string((const char *)node.ns->prefix);
@@ -102,21 +101,21 @@ srcml_node::srcml_node(const xmlNode & node)
 
   xmlNsPtr node_ns = node.nsDef;
   while(node_ns) {
-    ns_def.emplace_back(std::string((const char *)node_ns->href),
+    ns_definition.emplace_back(std::string((const char *)node_ns->href),
       node_ns->prefix ? std::string((const char *)node_ns->prefix) : boost::optional<std::string>());
     node_ns = node_ns->next;
   }
 
   xmlAttrPtr attribute = node.properties;
   while (attribute) {
-    attributes.emplace(std::make_pair(std::string((const char *)attribute->name), srcml_attr(attribute)));
+    attributes.emplace(std::make_pair(std::string((const char *)attribute->name), srcml_attribute(attribute)));
     attribute = attribute->next;
   }
 
 }
 
 srcml_node::srcml_node(const srcml_node & node) 
-  : type(node.type), name(node.name), ns(node.ns), content(node.content), ns_def(node.ns_def),
+  : type(node.type), name(node.name), ns(node.ns), content(node.content), ns_definition(node.ns_definition),
     attributes(node.attributes), is_empty(node.is_empty), extra(node.extra) {}
 
 srcml_node::srcml_node(const std::string & text)
@@ -126,11 +125,7 @@ srcml_node::srcml_node(const std::string & text)
 srcml_node::~srcml_node() {}
 
 bool srcml_node::operator==(const srcml_node & node) const {
-
-  return type == node.type
-    && name == node.name
-    && (((xmlReaderTypes)type != XML_READER_TYPE_TEXT && (xmlReaderTypes)type != XML_READER_TYPE_SIGNIFICANT_WHITESPACE)
-      || (content == node.content && (!content || *content == *node.content)));
+  return type == node.type && name == node.name && content == node.content;
 }
 
 bool srcml_node::operator!=(const srcml_node & node) const {

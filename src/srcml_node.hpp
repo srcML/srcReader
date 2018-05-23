@@ -40,21 +40,21 @@ class srcml_node {
 
 public:
 
-  class srcml_ns {
+  class srcml_namespace {
 
   public:
 
-    std::string href;
+    std::string uri;
     boost::optional<std::string> prefix;
 
-    srcml_ns(const std::string & href = std::string(), const boost::optional<std::string> & prefix = boost::optional<std::string>())
-      : href(href), prefix(prefix) {}
+    srcml_namespace(const std::string & uri = std::string(), const boost::optional<std::string> & prefix = boost::optional<std::string>())
+      : uri(uri), prefix(prefix) {}
 
-    srcml_ns(const srcml_ns & ns);
+    srcml_namespace(const srcml_namespace & ns);
 
   };
 
-  class srcml_attr {
+  class srcml_attribute {
 
   public:
 
@@ -63,25 +63,25 @@ public:
 
     /** @TODO add attr namespaces */
 
-    srcml_attr(xmlAttrPtr attribute);
-    srcml_attr(const srcml_attr & attr);
+    srcml_attribute(xmlAttrPtr attribute);
+    srcml_attribute(const srcml_attribute & attribute);
 
-    bool operator==(const srcml_attr & attr) const;
-    bool operator!=(const srcml_attr & attr) const;
+    bool operator==(const srcml_attribute & that) const;
+    bool operator!=(const srcml_attribute & that) const;
 
   };
 
   enum srcml_node_type : unsigned int  { OTHER = 0, START = 1, END = 2, TEXT = 3 };
 
-  typedef std::map<std::string, srcml_attr> srcml_attr_map;
-  typedef std::pair<std::string, srcml_attr> srcml_attr_map_pair;
+  typedef std::map<std::string, srcml_attribute> srcml_attribute_map;
+  typedef std::pair<std::string, srcml_attribute> srcml_attribute_map_pair;
 
   srcml_node_type type;
   std::string name;
-  srcml_ns ns;
+  srcml_namespace ns;
   boost::optional<std::string> content;
-  std::list<srcml_ns> ns_def;
-  srcml_attr_map attributes;
+  std::list<srcml_namespace> ns_definition;
+  srcml_attribute_map attributes;
   bool is_empty;
 
   unsigned short extra;
