@@ -48,7 +48,9 @@ public:
     std::string uri;
     boost::optional<std::string> prefix;
 
-    srcml_namespace(xmlNsPtr ns = nullptr);
+    srcml_namespace(const std::string & uri = std::string(),
+                    const boost::optional<std::string> & prefix = boost::optional<std::string>());
+    srcml_namespace(xmlNsPtr ns);
     srcml_namespace(const srcml_namespace & ns);
 
   };
@@ -85,6 +87,8 @@ public:
 
   unsigned short extra;
 
+  static std::shared_ptr<srcml_namespace> SRC_NAMESPACE;
+  static std::shared_ptr<srcml_namespace> CPP_NAMESPACE;
   static std::unordered_map<std::string, std::shared_ptr<srcml_namespace>> namespaces;
   static std::shared_ptr<srcml_namespace> get_namespace(xmlNsPtr ns);
 

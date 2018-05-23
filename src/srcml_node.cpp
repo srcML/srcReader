@@ -38,7 +38,19 @@
 #include <mingw32.hpp>
 #endif
 
-std::unordered_map<std::string, std::shared_ptr<srcml_node::srcml_namespace>> srcml_node::namespaces;
+std::shared_ptr<srcml_node::srcml_namespace> srcml_node::SRC_NAMESPACE 
+  = std::make_shared<srcml_node::srcml_namespace>("http://www.srcML.org/srcML/src");
+
+std::shared_ptr<srcml_node::srcml_namespace> srcml_node::CPP_NAMESPACE
+  = std::make_shared<srcml_node::srcml_namespace>("http://www.srcML.org/srcML/cpp", std::string("cpp"));
+
+std::unordered_map<std::string, std::shared_ptr<srcml_node::srcml_namespace>> srcml_node::namespaces = {
+  { "http://www.srcML.org/srcML/src", SRC_NAMESPACE},
+  { "http://www.srcML.org/srcML/cpp", CPP_NAMESPACE},
+};
+
+srcml_node::srcml_namespace::srcml_namespace(const std::string & uri, const boost::optional<std::string> & prefix)
+  : uri(uri), prefix(prefix) {}
 
 srcml_node::srcml_namespace::srcml_namespace(xmlNsPtr ns) : uri(), prefix() {
 

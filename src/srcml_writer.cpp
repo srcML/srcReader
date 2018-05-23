@@ -107,14 +107,11 @@ void srcml_writer::set_unit_attr(srcml_unit * unit, const srcml_node::srcml_attr
 }
 
 bool srcml_writer::setup_archive(const srcml_node & node) {
-  const std::string SRC_NAMESPACE = "http://www.srcML.org/srcML/src";
-  const std::string CPP_NAMESPACE = "http://www.srcML.org/srcML/cpp";
-
   unit = srcml_unit_create(archive);
   if(!unit) throw srcml_writer_error("Failure creating srcML Unit");
 
   for(const std::shared_ptr<srcml_node::srcml_namespace> & ns : node.ns_definition) {
-    if(ns->uri == SRC_NAMESPACE || ns->uri == CPP_NAMESPACE) continue;
+    if(ns == srcml_node::SRC_NAMESPACE || ns == srcml_node::CPP_NAMESPACE) continue;
     check_srcml_error(srcml_archive_register_namespace(archive, ns->prefix ? ns->prefix->c_str() : 0, ns->uri.c_str()),
                       false, "Error error registering namespace: ", ns->uri.c_str());
   }
