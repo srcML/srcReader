@@ -67,6 +67,7 @@ public:
 
   srcml_reader_iterator begin();
   srcml_reader_iterator end();
+  operator bool() const;
 
 };
 

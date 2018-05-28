@@ -90,6 +90,10 @@ srcml_reader::srcml_reader_iterator srcml_reader::end() {
   return srcml_reader_iterator();
 }
 
+srcml_reader::operator bool() const {
+  return *current_node != srcml_node();
+}
+
 srcml_reader::srcml_reader_iterator::srcml_reader_iterator(srcml_reader * reader)
   : reader(reader) {}
 
@@ -125,5 +129,7 @@ srcml_node srcml_reader::srcml_reader_iterator::operator++(int) {
 }
 
 bool srcml_reader::srcml_reader_iterator::operator!=(const srcml_reader_iterator & that) const {
-  return *reader->current_node != srcml_node();
+  return reader;
 }
+
+

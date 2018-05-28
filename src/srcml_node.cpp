@@ -68,6 +68,11 @@ srcml_node::srcml_attribute::srcml_attribute(xmlAttrPtr attribute)
           std::string((const char *)attribute->children->content) : boost::optional<std::string>()),
     ns(get_namespace(attribute->ns)) {}
 
+srcml_node::srcml_attribute::srcml_attribute(
+    const std::string & name,
+    boost::optional<std::string> value,
+    std::shared_ptr<srcml_namespace> ns) : name(name), value(value), ns(ns) {}
+
 srcml_node::srcml_attribute::srcml_attribute(const srcml_attribute & attribute)
   : name(attribute.name), value(attribute.value), ns(attribute.ns) {}
 

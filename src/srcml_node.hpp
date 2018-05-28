@@ -55,6 +55,10 @@ public:
 
   };
 
+  static std::shared_ptr<srcml_namespace> SRC_NAMESPACE;
+  static std::shared_ptr<srcml_namespace> CPP_NAMESPACE;
+  static std::unordered_map<std::string, std::shared_ptr<srcml_namespace>> namespaces;
+
   class srcml_attribute {
 
   public:
@@ -64,6 +68,9 @@ public:
     std::shared_ptr<srcml_namespace> ns;
 
     srcml_attribute(xmlAttrPtr attribute);
+    srcml_attribute(const std::string & name,
+                    boost::optional<std::string> value = boost::optional<std::string>(),
+                    std::shared_ptr<srcml_namespace> ns = SRC_NAMESPACE);
     srcml_attribute(const srcml_attribute & attribute);
 
     std::string full_name() const;
@@ -90,9 +97,6 @@ public:
 
   unsigned short extra;
 
-  static std::shared_ptr<srcml_namespace> SRC_NAMESPACE;
-  static std::shared_ptr<srcml_namespace> CPP_NAMESPACE;
-  static std::unordered_map<std::string, std::shared_ptr<srcml_namespace>> namespaces;
   static std::shared_ptr<srcml_namespace> get_namespace(xmlNsPtr ns);
 
 public:
