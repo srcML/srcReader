@@ -75,6 +75,7 @@ public:
 
   typedef std::map<std::string, srcml_attribute> srcml_attribute_map;
   typedef std::pair<std::string, srcml_attribute> srcml_attribute_map_pair;
+  typedef std::map<std::string, srcml_attribute>::iterator srcml_attribute_map_itr;
 
   srcml_node_type type;
   std::string name;
