@@ -71,6 +71,13 @@ srcml_node::srcml_attribute::srcml_attribute(xmlAttrPtr attribute)
 srcml_node::srcml_attribute::srcml_attribute(const srcml_attribute & attribute)
   : name(attribute.name), value(attribute.value), ns(attribute.ns) {}
 
+std::string srcml_node::srcml_attribute::full_name() const {
+
+  if(ns->prefix) return *ns->prefix + ":" + name;
+
+  return name;
+}
+
 bool srcml_node::srcml_attribute::operator==(const srcml_attribute & that) const {
   return ns == that.ns && name == that.name && value == that.value;
 }
@@ -151,7 +158,6 @@ std::string srcml_node::full_name() const {
   if(ns->prefix) return *ns->prefix + ":" + name;
 
   return name;
-
 }
 
 

@@ -66,6 +66,8 @@ public:
     srcml_attribute(xmlAttrPtr attribute);
     srcml_attribute(const srcml_attribute & attribute);
 
+    std::string full_name() const;
+
     bool operator==(const srcml_attribute & that) const;
     bool operator!=(const srcml_attribute & that) const;
 
