@@ -60,8 +60,6 @@ srcml_node::srcml_namespace::srcml_namespace(xmlNsPtr ns) : uri(), prefix() {
     if(ns->prefix) prefix = std::string((const char *)ns->prefix);
 }
 
-srcml_node::srcml_namespace::srcml_namespace(const srcml_namespace & ns) : uri(ns.uri), prefix(ns.prefix) {}
-
 srcml_node::srcml_attribute::srcml_attribute(xmlAttrPtr attribute)
   : name((const char *)attribute->name),
     value(attribute->children && attribute->children->content ? 
@@ -72,9 +70,6 @@ srcml_node::srcml_attribute::srcml_attribute(
     const std::string & name,
     boost::optional<std::string> value,
     std::shared_ptr<srcml_namespace> ns) : name(name), value(value), ns(ns) {}
-
-srcml_node::srcml_attribute::srcml_attribute(const srcml_attribute & attribute)
-  : name(attribute.name), value(attribute.value), ns(attribute.ns) {}
 
 std::string srcml_node::srcml_attribute::full_name() const {
 
@@ -149,10 +144,6 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
   }
 
 }
-
-srcml_node::srcml_node(const srcml_node & node) 
-  : type(node.type), name(node.name), ns(node.ns), content(node.content), ns_definition(node.ns_definition),
-    attributes(node.attributes), is_empty(node.is_empty), extra(node.extra) {}
 
 srcml_node::srcml_node(const std::string & text)
   : type(srcml_node_type::TEXT), name(), content(text), is_empty(true), extra(0) {}

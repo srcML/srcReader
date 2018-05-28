@@ -51,7 +51,6 @@ public:
     srcml_namespace(const std::string & uri = std::string(),
                     const boost::optional<std::string> & prefix = boost::optional<std::string>());
     srcml_namespace(xmlNsPtr ns);
-    srcml_namespace(const srcml_namespace & ns);
 
   };
 
@@ -71,7 +70,6 @@ public:
     srcml_attribute(const std::string & name,
                     boost::optional<std::string> value = boost::optional<std::string>(),
                     std::shared_ptr<srcml_namespace> ns = SRC_NAMESPACE);
-    srcml_attribute(const srcml_attribute & attribute);
 
     std::string full_name() const;
 
@@ -103,7 +101,6 @@ public:
 
   srcml_node();
   srcml_node(const xmlNode & node, xmlElementType xml_type);
-  srcml_node(const srcml_node & node);
   srcml_node(const std::string & text);
 
   ~srcml_node();
