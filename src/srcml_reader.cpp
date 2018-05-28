@@ -94,9 +94,19 @@ srcml_reader::srcml_reader_iterator::srcml_reader_iterator(srcml_reader * reader
   : reader(reader) {}
 
 const srcml_node & srcml_reader::srcml_reader_iterator::operator*() const {
-
   return *reader->current_node; 
+}
 
+srcml_node & srcml_reader::srcml_reader_iterator::operator*() {
+  return *reader->current_node; 
+}
+
+const srcml_node * srcml_reader::srcml_reader_iterator::operator->() const {
+  return reader->current_node.get(); 
+}
+
+srcml_node * srcml_reader::srcml_reader_iterator::operator->() {
+  return reader->current_node.get(); 
 }
 
 const srcml_node & srcml_reader::srcml_reader_iterator::operator++() {

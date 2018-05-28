@@ -41,6 +41,9 @@ public:
         srcml_reader_iterator(srcml_reader * reader = nullptr);
       public:
         const srcml_node & operator*() const;
+        srcml_node & operator*();
+        const srcml_node * operator->() const;
+        srcml_node * operator->();
         const srcml_node & operator++();
         srcml_node operator++(int);
         bool operator!=(const srcml_reader_iterator & that) const;
