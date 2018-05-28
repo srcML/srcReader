@@ -138,7 +138,8 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
 
   xmlAttrPtr attribute = node.properties;
   while (attribute) {
-    attributes.emplace(std::make_pair(std::string((const char *)attribute->name), srcml_attribute(attribute)));
+    srcml_attribute new_attribute = srcml_attribute(attribute);
+    attributes.emplace(std::make_pair(new_attribute.full_name(), new_attribute));
     attribute = attribute->next;
   }
 
