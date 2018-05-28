@@ -144,8 +144,16 @@ srcml_node::srcml_node(const srcml_node & node)
 srcml_node::srcml_node(const std::string & text)
   : type(srcml_node_type::TEXT), name(), content(text), is_empty(true), extra(0) {}
 
-
 srcml_node::~srcml_node() {}
+
+std::string srcml_node::full_name() const {
+
+  if(ns->prefix) return *ns->prefix + ":" + name;
+
+  return name;
+
+}
+
 
 bool srcml_node::operator==(const srcml_node & node) const {
   return type == node.type && name == node.name && content == node.content;

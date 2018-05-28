@@ -100,6 +100,8 @@ public:
 
   ~srcml_node();
 
+  std::string full_name() const;
+
   bool operator==(const srcml_node & node) const;
   bool operator!=(const srcml_node & node) const;
 
