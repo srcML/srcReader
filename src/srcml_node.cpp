@@ -167,3 +167,7 @@ bool srcml_node::operator!=(const srcml_node & node) const {
 bool srcml_node::is_text() const {
   return type == srcml_node_type::TEXT;
 }
+bool srcml_node::is_whitespace() const {
+  return is_text() && std::isspace((*content)[0]);
+}
+

@@ -111,6 +111,7 @@ public:
   bool operator!=(const srcml_node & node) const;
 
   bool is_text() const;
+  bool is_whitespace() const;
 
 };
 
