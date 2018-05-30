@@ -68,8 +68,8 @@ public:
 
     srcml_attribute(xmlAttrPtr attribute);
     srcml_attribute(const std::string & name = std::string(),
-                    boost::optional<std::string> value = boost::optional<std::string>(),
-                    std::shared_ptr<srcml_namespace> ns = SRC_NAMESPACE);
+                    std::shared_ptr<srcml_namespace> ns = SRC_NAMESPACE,
+                    boost::optional<std::string> value = boost::optional<std::string>());
 
     std::string full_name() const;
 
