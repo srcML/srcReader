@@ -129,7 +129,7 @@ srcml_node srcml_reader::srcml_reader_iterator::operator++(int) {
 }
 
 bool srcml_reader::srcml_reader_iterator::operator!=(const srcml_reader_iterator & that) const {
-  return reader;
+  return *reader;
 }
 
 
