@@ -41,7 +41,7 @@ void srcml_reader::cleanup() {
 }
 
 srcml_reader::srcml_reader(const std::string & filename) 
-  : reader(nullptr), current_node(), is_eof(false), iterator() {
+  : reader(nullptr), offset(std::string::npos), current_node(), is_eof(false), iterator() {
 
   reader = xmlNewTextReaderFilename(filename.c_str());
   if(!reader) {
@@ -55,8 +55,35 @@ srcml_reader::~srcml_reader() {
   cleanup();
 }
 
+static bool find_count(const std::string & str, std::string::size_type start) {
+    bool is_space = std::isspace(str[start]);
+    std::string::size_type size = str.size();
+    std::string::size_type end = start + 1;
+    while(end < size && std::isspace(str[end]) == is_space) {
+      ++end;
+    }
+
+    if(end >= size) return std::string::npos;
+    return end - start;
+}
+
+void srcml_reader::update_current_text_node() {
+    std::string::size_type count = find_count(*saved_node->content, offset);
+    current_node = std::make_unique<srcml_node>(saved_node->content->substr(offset, count));
+    if(count != std::string::npos) {
+      offset += count;
+    } else {
+      offset = std::string::npos;
+    }
+}
+
 bool srcml_reader::read() {
   if(is_eof) return false;
+
+  if(current_node->type == srcml_node::srcml_node_type::TEXT
+     && offset != std::string::npos) {
+    update_current_text_node();
+  }
 
   int success = xmlTextReaderRead(reader);
   if(success == -1) throw srcml_reader_error("Error reading file");
@@ -72,7 +99,20 @@ bool srcml_reader::read() {
   int type = xmlTextReaderNodeType(reader);
   if(type == -1) srcml_reader_error("Error getting node type");
 
-  current_node = std::make_unique<srcml_node>(*node, (xmlElementType)type);
+  srcml_node * temp_node = nullptr;
+  try {
+    temp_node = new srcml_node(*node, (xmlElementType)type);
+  } catch(const std::bad_alloc & memory_error) {
+    throw srcml_reader_error("Memory error getting node");
+  }
+  if(current_node->type == srcml_node::srcml_node_type::TEXT) {
+    offset = 0;
+    saved_node = std::unique_ptr<srcml_node>(temp_node);
+    update_current_text_node();
+  } else {
+    current_node = std::unique_ptr<srcml_node>(temp_node);
+  }
+
   return true;
 }
 

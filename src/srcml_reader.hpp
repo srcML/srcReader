@@ -54,8 +54,11 @@ private:
 
   void cleanup();
   bool read();
+  void update_current_text_node();
 
   xmlTextReaderPtr reader;
+  std::string::size_type offset;
+  std::unique_ptr<srcml_node> saved_node;
   std::unique_ptr<srcml_node> current_node;
   bool is_eof;
 
