@@ -144,7 +144,7 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
 }
 
 srcml_node::srcml_node(const std::string & text)
-  : type(srcml_node_type::TEXT), name(), content(text), is_empty(true), extra(0) {}
+  : type(srcml_node_type::TEXT), name(), ns(SRC_NAMESPACE), content(text), ns_definition(), attributes(), is_empty(true), extra(0) {}
 
 srcml_node::~srcml_node() {}
 
