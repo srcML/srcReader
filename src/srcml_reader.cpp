@@ -56,6 +56,7 @@ srcml_reader::~srcml_reader() {
 }
 
 static bool find_count(const std::string & str, std::string::size_type start) {
+
     bool is_space = std::isspace(str[start]);
     std::string::size_type size = str.size();
     std::string::size_type end = start + 1;
@@ -68,7 +69,9 @@ static bool find_count(const std::string & str, std::string::size_type start) {
 }
 
 void srcml_reader::update_current_text_node() {
+
     std::string::size_type count = find_count(*saved_node->content, offset);
+
     current_node = std::make_unique<srcml_node>(saved_node->content->substr(offset, count));
     if(count != std::string::npos) {
       offset += count;
@@ -80,7 +83,7 @@ void srcml_reader::update_current_text_node() {
 bool srcml_reader::read() {
   if(is_eof) return false;
 
-  if(current_node->type == srcml_node::srcml_node_type::TEXT
+  if(current_node && current_node->type == srcml_node::srcml_node_type::TEXT
      && offset != std::string::npos) {
     update_current_text_node();
   }
@@ -105,14 +108,14 @@ bool srcml_reader::read() {
   } catch(const std::bad_alloc & memory_error) {
     throw srcml_reader_error("Memory error getting node");
   }
-  if(current_node->type == srcml_node::srcml_node_type::TEXT) {
+
+  if(temp_node->type == srcml_node::srcml_node_type::TEXT) {
     offset = 0;
     saved_node = std::unique_ptr<srcml_node>(temp_node);
     update_current_text_node();
   } else {
     current_node = std::unique_ptr<srcml_node>(temp_node);
   }
-
   return true;
 }
 
