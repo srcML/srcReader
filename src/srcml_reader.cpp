@@ -55,7 +55,7 @@ srcml_reader::~srcml_reader() {
   cleanup();
 }
 
-static bool find_count(const std::string & str, std::string::size_type start) {
+static std::string::size_type find_count(const std::string & str, std::string::size_type start) {
 
     bool is_space = std::isspace(str[start]);
     std::string::size_type size = str.size();
