@@ -72,6 +72,7 @@ void srcml_reader::update_current_text_node() {
 
     std::string::size_type count = find_count(*saved_node->content, offset);
     current_node = std::make_unique<srcml_node>(saved_node->content->substr(offset, count));
+
     if(count != std::string::npos) {
       offset += count;
     } else {
@@ -82,9 +83,9 @@ void srcml_reader::update_current_text_node() {
 bool srcml_reader::read() {
   if(is_eof) return false;
 
-  if(current_node && current_node->type == srcml_node::srcml_node_type::TEXT
-     && offset != std::string::npos) {
+  if(offset != std::string::npos && current_node->type == srcml_node::srcml_node_type::TEXT) {
     update_current_text_node();
+    return true;
   }
 
   int success = xmlTextReaderRead(reader);
