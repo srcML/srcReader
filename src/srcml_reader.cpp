@@ -71,7 +71,6 @@ static std::string::size_type find_count(const std::string & str, std::string::s
 void srcml_reader::update_current_text_node() {
 
     std::string::size_type count = find_count(*saved_node->content, offset);
-
     current_node = std::make_unique<srcml_node>(saved_node->content->substr(offset, count));
     if(count != std::string::npos) {
       offset += count;
