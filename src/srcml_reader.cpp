@@ -83,7 +83,7 @@ void srcml_reader::update_current_text_node() {
 bool srcml_reader::read() {
   if(is_eof) return false;
 
-  if(offset != std::string::npos && current_node->type == srcml_node::srcml_node_type::TEXT) {
+  if(offset != std::string::npos && current_node->is_text()) {
     update_current_text_node();
     return true;
   }
@@ -109,7 +109,7 @@ bool srcml_reader::read() {
     throw srcml_reader_error("Memory error getting node");
   }
 
-  if(temp_node->type == srcml_node::srcml_node_type::TEXT) {
+  if(temp_node->is_text()) {
     offset = 0;
     saved_node = std::unique_ptr<srcml_node>(temp_node);
     update_current_text_node();

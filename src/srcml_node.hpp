@@ -110,6 +110,8 @@ public:
   bool operator==(const srcml_node & node) const;
   bool operator!=(const srcml_node & node) const;
 
+  bool is_start() const;
+  bool is_end() const;
   bool is_text() const;
   bool is_whitespace() const;
 
