@@ -93,6 +93,8 @@ void srcml_writer::set_unit_attr(srcml_unit * unit, const srcml_node::srcml_attr
     { "filename", srcml_unit_set_filename },
     { "hash"    , no_op },
     { "revision", no_op },
+    { "author", no_op },
+    { "modifier", no_op },
   };
 
   for(const srcml_node::srcml_attribute_map_pair & attr : attributes) {
