@@ -44,10 +44,7 @@ std::shared_ptr<srcml_node::srcml_namespace> srcml_node::SRC_NAMESPACE
 std::shared_ptr<srcml_node::srcml_namespace> srcml_node::CPP_NAMESPACE
   = std::make_shared<srcml_node::srcml_namespace>("http://www.srcML.org/srcML/cpp", std::string("cpp"));
 
-std::unordered_map<std::string, std::shared_ptr<srcml_node::srcml_namespace>> srcml_node::namespaces = {
-  { "http://www.srcML.org/srcML/src", SRC_NAMESPACE},
-  { "http://www.srcML.org/srcML/cpp", CPP_NAMESPACE},
-};
+std::unordered_map<std::string, std::shared_ptr<srcml_node::srcml_namespace>> srcml_node::namespaces = {};
 
 srcml_node::srcml_namespace::srcml_namespace(const std::string & uri, const boost::optional<std::string> & prefix)
   : uri(uri), prefix(prefix) {}
@@ -103,10 +100,18 @@ srcml_node::srcml_node_type xml_type2srcml_type(xmlElementType type) {
 }
 
 std::shared_ptr<srcml_node::srcml_namespace> srcml_node::get_namespace(xmlNsPtr ns) {
-  typedef  std::unordered_map<std::string, std::shared_ptr<srcml_namespace>>::const_iterator namespaces_citr;
+
+  static bool init_namespace = true;
+
+  if(init_namespace) {
+      namespaces.emplace(std::make_pair("http://www.srcML.org/srcML/src", SRC_NAMESPACE));
+      namespaces.emplace(std::make_pair("http://www.srcML.org/srcML/cpp", CPP_NAMESPACE));
+      init_namespace = false;
+  }
 
   if(!ns) return SRC_NAMESPACE;
 
+  typedef std::unordered_map<std::string, std::shared_ptr<srcml_namespace>>::const_iterator namespaces_citr;
   namespaces_citr citr = namespaces.find((const char *)ns->href);
   if(citr != namespaces.end()) return citr->second;
 
@@ -119,7 +124,7 @@ srcml_node::srcml_node()
   : type(srcml_node_type::OTHER), name(), ns(SRC_NAMESPACE), content(), ns_definition(), attributes(), is_empty(false), extra(0) {}
 
 srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type) 
-  : type(xml_type2srcml_type(xml_type)), name(), ns(SRC_NAMESPACE), content(), ns_definition(), attributes(), is_empty(node.extra), extra(node.extra) {
+  : type(xml_type2srcml_type(xml_type)), name(), ns(), content(), ns_definition(), attributes(), is_empty(node.extra), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 

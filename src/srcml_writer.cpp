@@ -146,7 +146,7 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
 bool srcml_writer::write_start(const srcml_node & node) {
 
   if(node.name != "unit") {
-    check_srcml_error(srcml_write_start_element(unit, node.ns->prefix ? node.ns->prefix->c_str() : 0, node.name.c_str(), 0),
+    check_srcml_error(srcml_write_start_element(unit, node.ns->prefix ? node.ns->prefix->c_str() : 0, node.name.c_str(), node.ns->uri.c_str()),
                       false, "Error writing start tag");
 
     for(const std::shared_ptr<srcml_node::srcml_namespace> ns : node.ns_definition) {
