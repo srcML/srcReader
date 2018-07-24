@@ -66,7 +66,7 @@ srcml_writer::srcml_writer(const std::string & filename)
 
     archive = srcml_archive_create();
     if(!archive) throw srcml_writer_error("Failure creating srcML Archive");
-    check_srcml_error(srcml_archive_write_open_filename(archive, filename.c_str(), 0), true, "Unable to open: ", filename.c_str());
+    check_srcml_error(srcml_archive_write_open_filename(archive, filename.c_str()), true, "Unable to open: ", filename.c_str());
     check_srcml_error(srcml_archive_disable_full_archive(archive), false, "Error disabling archive");
 }
 
