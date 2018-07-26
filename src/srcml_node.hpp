@@ -33,6 +33,7 @@
 #include <memory>
 
 #include <boost/optional.hpp>
+#include <boost/any.hpp>
 
 #include <libxml/xmlreader.h>
 #include <libxml/xmlwriter.h>
@@ -92,6 +93,7 @@ public:
   std::list<std::shared_ptr<srcml_namespace>> ns_definition;
   srcml_attribute_map attributes;
   bool is_empty;
+  boost::any user_data;
 
   unsigned short extra;
 
