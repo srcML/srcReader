@@ -212,7 +212,17 @@ bool srcml_writer::write_text(const srcml_node & node) {
   if(!node.content) return true;
   if(!in_unit) return true;
 
+
+  if(node.attributes.size()) {
+    write_start(node);
+  }
+
   check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
+
+  if(node.attributes.size()) {
+    write_end(node);
+  }
+
   return true;
 }
 

@@ -151,7 +151,7 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
 }
 
 srcml_node::srcml_node(const std::string & text)
-  : type(srcml_node_type::TEXT), name("text"), ns(SRC_NAMESPACE), content(text), ns_definition(), attributes(), is_empty(true), extra(0) {}
+  : type(srcml_node_type::TEXT), name("text"), ns(SRC_NAMESPACE), content(text), ns_definition(), attributes(), is_empty(false), extra(0) {}
 
 srcml_node::~srcml_node() {}
 
@@ -160,8 +160,39 @@ std::string srcml_node::full_name() const {
   if(ns->prefix) return *ns->prefix + ":" + name;
 
   return name;
+} 
+
+const srcml_node::srcml_attribute * srcml_node::get_attribute(const std::string & attribute) const {
+
+  srcml_node::srcml_attribute_map_citr attribute_itr = attributes.find(attribute);
+  if(attribute_itr == attributes.end()) return nullptr;
+  return &attribute_itr->second;
+
 }
 
+srcml_node::srcml_attribute * srcml_node::get_attribute(const std::string & attribute) {
+
+  srcml_node::srcml_attribute_map_itr attribute_itr = attributes.find(attribute);
+  if(attribute_itr == attributes.end()) return nullptr;
+  return &attribute_itr->second;
+
+}
+
+const std::string * srcml_node::get_attribute_value(const std::string & attribute) const {
+
+  srcml_node::srcml_attribute_map_citr attribute_itr = attributes.find(attribute);
+  if(attribute_itr == attributes.end() || !attribute_itr->second.value) return nullptr;
+  return &*attribute_itr->second.value;
+
+}
+
+std::string * srcml_node::get_attribute_value(const std::string & attribute) {
+
+  srcml_node::srcml_attribute_map_itr attribute_itr = attributes.find(attribute);
+  if(attribute_itr == attributes.end() || !attribute_itr->second.value) return nullptr;
+  return &*attribute_itr->second.value;
+
+}
 
 bool srcml_node::operator==(const srcml_node & node) const {
   return type == node.type && name == node.name && content == node.content;

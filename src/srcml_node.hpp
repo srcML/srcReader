@@ -108,6 +108,11 @@ public:
   ~srcml_node();
 
   std::string full_name() const;
+  const srcml_node::srcml_attribute * get_attribute(const std::string & attribute) const;
+  srcml_node::srcml_attribute * get_attribute(const std::string & attribute);
+  const std::string * get_attribute_value(const std::string & attribute) const;
+  std::string * get_attribute_value(const std::string & attribute);
+
 
   bool operator==(const srcml_node & node) const;
   bool operator!=(const srcml_node & node) const;
