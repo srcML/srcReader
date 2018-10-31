@@ -218,3 +218,17 @@ bool srcml_node::is_whitespace() const {
   return is_text() && std::isspace((*content)[0]);
 }
 
+std::ostream & operator<<(std::ostream & out, const srcml_node & node) {
+  if(node.is_whitespace()) {
+    out << "text: '" << *node.content << '\'';
+  } else {
+      out << '<';
+    if(node.is_end()) {
+      out << '/';
+    }
+    out << node.name << '>';
+  }
+  return out;
+}
+
+

@@ -113,7 +113,6 @@ public:
   const std::string * get_attribute_value(const std::string & attribute) const;
   std::string * get_attribute_value(const std::string & attribute);
 
-
   bool operator==(const srcml_node & node) const;
   bool operator!=(const srcml_node & node) const;
 
@@ -121,6 +120,8 @@ public:
   bool is_end() const;
   bool is_text() const;
   bool is_whitespace() const;
+
+  friend std::ostream & operator<<(std::ostream & out, const srcml_node & node);
 
 };
 
