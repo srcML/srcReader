@@ -28,9 +28,10 @@ add_definitions("-std=c++14")
 find_package(LibXml2 REQUIRED)
 
 set(LIBSRCML_INCLUDE_DIRS /usr/local/include ${LIBXML2_INCLUDE_DIR})
+set(LIBSRCML_LIBRARIES srcml ${LIBXML2_LIBRARIES})
 
 set(SRC_READER_INCLUDE_DIRS ${SRC_READER_SOURCE_DIR}/src ${LIBSRCML_INCLUDE_DIRS}  CACHE INTERNAL "Include directories for SRC_READER")
-set(SRC_READER_LIBRARIES ${LIBXML2_LIBRARIES} srcml CACHE INTERNAL "Libraries for SRC_READER")
+set(SRC_READER_LIBRARIES ${LIBSRCML_LIBRARIES} CACHE INTERNAL "Libraries for SRC_READER")
 
 # include needed includes
 include_directories(${SRC_READER_INCLUDE_DIRS})
