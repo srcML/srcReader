@@ -175,7 +175,7 @@ bool srcml_writer::write_start(const srcml_node & node) {
     set_unit_attr(unit, node.attributes);
   }
 
-  if(node.is_empty) write_process_map[srcml_node::srcml_node_type::END](node);
+  if(node.is_empty()) write_process_map[srcml_node::srcml_node_type::END](node);
   return true;
 }
 

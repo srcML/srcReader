@@ -92,7 +92,7 @@ public:
   boost::optional<std::string> content;
   std::list<std::shared_ptr<srcml_namespace>> ns_definition;
   srcml_attribute_map attributes;
-  bool is_empty;
+  bool empty;
   boost::any user_data;
 
   unsigned short extra;
@@ -118,6 +118,7 @@ public:
 
   bool is_start() const;
   bool is_end() const;
+  bool is_empty() const;
   bool is_text() const;
   bool is_whitespace() const;
 

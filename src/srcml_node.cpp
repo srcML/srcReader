@@ -122,11 +122,11 @@ std::shared_ptr<srcml_node::srcml_namespace> srcml_node::get_namespace(xmlNsPtr 
 
 srcml_node::srcml_node()
   : type(srcml_node_type::OTHER), name(), ns(SRC_NAMESPACE), content(),
-    ns_definition(), attributes(), is_empty(false), user_data(), extra(0) {}
+    ns_definition(), attributes(), empty(false), user_data(), extra(0) {}
 
 srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type) 
   : type(xml_type2srcml_type(xml_type)), name(), ns(), content(),
-    ns_definition(), attributes(), is_empty(node.extra), user_data(), extra(node.extra) {
+    ns_definition(), attributes(), empty(node.extra), user_data(), extra(node.extra) {
 
   name = std::string((const char *)node.name);
 
@@ -151,7 +151,7 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
 }
 
 srcml_node::srcml_node(const std::string & text)
-  : type(srcml_node_type::TEXT), name("text"), ns(SRC_NAMESPACE), content(text), ns_definition(), attributes(), is_empty(false), extra(0) {}
+  : type(srcml_node_type::TEXT), name("text"), ns(SRC_NAMESPACE), content(text), ns_definition(), attributes(), empty(false), extra(0) {}
 
 srcml_node::~srcml_node() {}
 
@@ -209,6 +209,11 @@ bool srcml_node::is_start() const {
 bool srcml_node::is_end() const {
   return type == srcml_node_type::END;
 }
+
+bool srcml_node::is_empty() const {
+  return empty;
+}
+
 
 bool srcml_node::is_text() const {
   return type == srcml_node_type::TEXT;
