@@ -30,6 +30,7 @@
 
 #include <string>
 #include <memory>
+#include <stack>
 
 class srcml_reader_error;
 
@@ -64,9 +65,13 @@ private:
 
   srcml_reader_iterator iterator;
 
+  std::stack<std::string> element_stack;
+
 public:
   srcml_reader(const std::string & filename);
   ~srcml_reader();
+
+  const std::stack<std::string> & get_element_stack() const;
 
   srcml_reader_iterator begin();
   srcml_reader_iterator end();

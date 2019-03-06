@@ -55,6 +55,10 @@ srcml_reader::~srcml_reader() {
   cleanup();
 }
 
+const std::stack<std::string> & srcml_reader::get_element_stack() const {
+  return element_stack;
+}
+
 static std::string::size_type find_count(const std::string & str, std::string::size_type start) {
 
     bool is_space = std::isspace(str[start]);
@@ -115,6 +119,11 @@ bool srcml_reader::read() {
     update_current_text_node();
   } else {
     current_node = std::unique_ptr<srcml_node>(temp_node);
+    if(current_node->is_start()) {
+      element_stack.push(current_node->full_name());
+    } else if(current_node->is_end()){
+      element_stack.pop();
+    }
   }
   return true;
 }
