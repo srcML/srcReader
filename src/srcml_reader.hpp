@@ -75,6 +75,9 @@ public:
 
   srcml_reader_iterator begin();
   srcml_reader_iterator end();
+  xmlDocPtr get_current_doc() const;
+  xmlNodePtr expand_current_node() const;
+
   operator bool() const;
 
 };

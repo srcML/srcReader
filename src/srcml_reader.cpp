@@ -142,6 +142,24 @@ srcml_reader::srcml_reader_iterator srcml_reader::end() {
   return srcml_reader_iterator();
 }
 
+xmlDocPtr srcml_reader::get_current_doc() const {
+  xmlDocPtr doc = xmlTextReaderCurrentDoc(reader);
+  if(doc == nullptr) {
+    throw srcml_reader_error("Error getting current doc");
+  }
+  return doc;
+}
+
+xmlNodePtr srcml_reader::expand_current_node() const {
+  xmlNodePtr subtree = xmlTextReaderExpand(reader);
+  if(subtree == nullptr) {
+    throw srcml_reader_error("Error expanding current node");
+  }
+  return subtree;
+
+}
+
+
 srcml_reader::operator bool() const {
   return *current_node != srcml_node();
 }
