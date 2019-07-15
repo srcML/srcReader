@@ -67,7 +67,7 @@ srcml_writer::srcml_writer(const std::string & filename)
     archive = srcml_archive_create();
     if(!archive) throw srcml_writer_error("Failure creating srcML Archive");
     check_srcml_error(srcml_archive_write_open_filename(archive, filename.c_str()), true, "Unable to open: ", filename.c_str());
-    check_srcml_error(srcml_archive_disable_full_archive(archive), false, "Error disabling archive");
+    check_srcml_error(srcml_archive_enable_solitary_unit(archive), false, "Error disabling archive");
 }
 
 srcml_writer::~srcml_writer() {
@@ -136,7 +136,7 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
     check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
     write_process_map[srcml_node::srcml_node_type::TEXT](srcml_node(saved_characters));
   } else {
-    check_srcml_error(srcml_archive_enable_full_archive(archive), false, "Error enabling archive");
+    check_srcml_error(srcml_archive_disable_solitary_unit(archive), false, "Error enabling archive");
   }
 
   write_process_map[srcml_node::srcml_node_type::START](node);
