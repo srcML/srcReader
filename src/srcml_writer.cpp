@@ -144,7 +144,10 @@ bool srcml_writer::write_start_first(const srcml_node & node) {
   return true;
 
 }
-
+/**
+ * @todo consider refactoring these so that srcml_node has a write,
+ * and we replace typecode with polymorphism instead.
+ */
 bool srcml_writer::write_start(const srcml_node & node) {
 
   if(node.name != "unit") {
