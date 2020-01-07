@@ -25,4 +25,4 @@ build_lib(srcreader_shared SHARED)
 target_link_libraries(srcreader_shared PRIVATE ${SRC_READER_LIBRARIES})
 
 install(TARGETS srcreader_shared srcreader_static RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install(FILES ${HANDLER_INCLUDE} DESTINATION include/srcreader)
+install(FILES ${SRC_READER_INCLUDE} DESTINATION include/srcreader)
