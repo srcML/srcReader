@@ -231,8 +231,17 @@ std::ostream & operator<<(std::ostream & out, const srcml_node & node) {
     if(node.is_end()) {
       out << '/';
     }
-    out << node.name << '>';
+    out << node.name;
   }
+
+  for(const srcml_node::srcml_attribute_map_pair & attribute_pair : node.attributes) {
+    out << ' ' << attribute_pair.first << '=' << *attribute_pair.second.value;
+  }
+
+  if(!node.is_text()) {
+    out << '>';
+  }
+
   return out;
 }
 
