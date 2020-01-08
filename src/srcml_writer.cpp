@@ -115,7 +115,7 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
   if(!unit) throw srcml_writer_error("Failure creating srcML Unit");
 
   for(const std::shared_ptr<srcml_node::srcml_namespace> & ns : node.ns_definition) {
-    if(ns == srcml_node::SRC_NAMESPACE || ns == srcml_node::CPP_NAMESPACE) continue;
+    if(ns == srcml_node::SRC_NAMESPACE) continue;
     check_srcml_error(srcml_archive_register_namespace(archive, ns->prefix ? ns->prefix->c_str() : 0, ns->uri.c_str()),
                       false, "Error error registering namespace: ", ns->uri.c_str());
   }
