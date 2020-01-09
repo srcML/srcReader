@@ -225,7 +225,7 @@ bool srcml_node::is_whitespace() const {
 
 std::ostream & operator<<(std::ostream & out, const srcml_node & node) {
   if(node.is_text()) {
-    out << "text: '" << *node.content << '\'';
+    out << "text: '" << (node.content ? *node.content : "") << '\'';
   } else {
       out << '<';
     if(node.is_end()) {
