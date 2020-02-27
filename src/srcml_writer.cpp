@@ -220,7 +220,7 @@ bool srcml_writer::write_text(const srcml_node & node) {
     write_start(node);
   }
 
-  check_srcml_error(srcml_write_string(unit, node.content ? node.content->c_str() : 0), false, "Error writing text");
+  check_srcml_error(srcml_write_string(unit, node.content->c_str()), false, "Error writing text");
 
   if(node.attributes.size()) {
     write_end(node);
