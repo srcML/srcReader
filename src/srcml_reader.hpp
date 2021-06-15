@@ -60,6 +60,9 @@ private:
   xmlTextReaderPtr reader;
   std::string::size_type offset;
   std::unique_ptr<srcml_node> saved_node;
+
+  bool issue_end_tag;
+
   std::unique_ptr<srcml_node> current_node;
   bool is_eof;
 

@@ -252,5 +252,3 @@ std::ostream & operator<<(std::ostream & out, const srcml_node & node) {
 
   return out;
 }
-
-

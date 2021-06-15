@@ -62,7 +62,7 @@ void srcml_writer::check_srcml_error(int error_code, bool perform_cleanup, const
 
 
 srcml_writer::srcml_writer(const std::string & filename)
-  : archive(nullptr), unit(nullptr), saved_characters(), in_unit(true) {
+  : archive(nullptr), unit(nullptr), saved_characters(), in_unit(true), started(false) {
 
     archive = srcml_archive_create();
     if(!archive) throw srcml_writer_error("Failure creating srcML Archive");
@@ -129,6 +129,8 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
 
 bool srcml_writer::write_start_first(const srcml_node & node) {
 
+  /// @todo figure how to check a bound function pointer
+  started = true;
   write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start, this, std::placeholders::_1);
   write_process_map[srcml_node::srcml_node_type::TEXT] = std::bind(&srcml_writer::write_text, this, std::placeholders::_1);
 
@@ -190,6 +192,11 @@ bool srcml_writer::write_end(const srcml_node & node) {
   }
 
   if(!in_unit) return true;
+
+  if(!started) {
+    check_srcml_error(srcml_write_start_unit(unit), false, "Error starting unit");
+    started = true;
+  }
 
   check_srcml_error(srcml_write_end_unit(unit), false, "Error ending unit");
   check_srcml_error(srcml_archive_write_unit(archive, unit), false, "Error writing unit");
