@@ -49,13 +49,17 @@ std::unordered_map<std::string, std::shared_ptr<srcml_node::srcml_namespace>> sr
 srcml_node::srcml_namespace::srcml_namespace(const std::string & uri, const boost::optional<std::string> & prefix)
   : uri(uri), prefix(prefix) {}
 
-srcml_node::srcml_namespace::srcml_namespace(xmlNsPtr ns) : uri(), prefix() {
+srcml_node::srcml_namespace::srcml_namespace(xmlNsPtr ns) 
+  : uri(), prefix() {
 
     if(!ns) return;
 
     if(ns->href)   uri = std::string((const char *)ns->href);
     if(ns->prefix) prefix = std::string((const char *)ns->prefix);
 }
+
+srcml_node::srcml_namespace::srcml_namespace(const srcml_namespace & ns) 
+  : uri(ns.uri), prefix(ns.prefix) {}
 
 srcml_node::srcml_attribute::srcml_attribute(xmlAttrPtr attribute)
   : name((const char *)attribute->name),
@@ -152,6 +156,10 @@ srcml_node::srcml_node(const xmlNode & node, xmlElementType xml_type)
 
 srcml_node::srcml_node(const std::string & text)
   : type(srcml_node_type::TEXT), name("text"), ns(SRC_NAMESPACE), content(text), ns_definition(), attributes(), empty(false), extra(0) {}
+
+srcml_node::srcml_node(const srcml_node & node) : type(node.type), name(node.name), ns(node.ns),
+  content(node.content), ns_definition(node.ns_definition), attributes(node.attributes), empty(node.empty),
+  user_data(node.user_data) {}
 
 srcml_node::~srcml_node() {}
 
