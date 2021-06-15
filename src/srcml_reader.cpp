@@ -86,7 +86,7 @@ void srcml_reader::update_current_text_node() {
 
 bool srcml_reader::read() {
   if(is_eof) return false;
-
+  /// @todo handle empty elementa
   if(offset != std::string::npos && current_node->is_text()) {
     update_current_text_node();
     return true;
@@ -119,6 +119,7 @@ bool srcml_reader::read() {
     update_current_text_node();
   } else {
     current_node = std::unique_ptr<srcml_node>(temp_node);
+
     if(current_node->is_start()) {
       element_stack.push(current_node->full_name());
     } else if(current_node->is_end()){
