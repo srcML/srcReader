@@ -51,6 +51,7 @@ public:
 
     srcml_namespace(const std::string & uri = std::string(),
                     const boost::optional<std::string> & prefix = boost::optional<std::string>());
+    srcml_namespace(const srcml_namespace & ns);
     srcml_namespace(xmlNsPtr ns);
 
   };
@@ -104,6 +105,7 @@ public:
   srcml_node();
   srcml_node(const xmlNode & node, xmlElementType xml_type);
   srcml_node(const std::string & text);
+  srcml_node(const srcml_node & node);
 
   ~srcml_node();
 

@@ -41,7 +41,7 @@ void srcml_reader::cleanup() {
 }
 
 srcml_reader::srcml_reader(const std::string & filename) 
-  : reader(nullptr), offset(std::string::npos), current_node(), is_eof(false), iterator() {
+  : reader(nullptr), offset(std::string::npos), saved_node(), current_node(), is_eof(false), iterator() {
 
   reader = xmlNewTextReaderFilename(filename.c_str());
   if(!reader) {
@@ -87,9 +87,21 @@ void srcml_reader::update_current_text_node() {
 bool srcml_reader::read() {
   if(is_eof) return false;
 
+  /// @todo handle empty elementa
   if(offset != std::string::npos && current_node->is_text()) {
     update_current_text_node();
     return true;
+
+  } else if(current_node->is_empty()) {
+    current_node = std::make_unique<srcml_node>(*current_node);
+    current_node->type = srcml_node::srcml_node_type::END;
+    current_node->empty = false;
+    current_node->attributes.clear();
+    current_node->ns_definition.clear();
+
+    element_stack.pop();
+    return true;
+
   }
 
   int success = xmlTextReaderRead(reader);
@@ -119,6 +131,7 @@ bool srcml_reader::read() {
     update_current_text_node();
   } else {
     current_node = std::unique_ptr<srcml_node>(temp_node);
+
     if(current_node->is_start()) {
       element_stack.push(current_node->full_name());
     } else if(current_node->is_end()){
