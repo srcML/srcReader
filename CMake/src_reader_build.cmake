@@ -27,9 +27,10 @@ add_definitions("-std=c++14")
 # find needed libraries
 find_package(LibXml2 REQUIRED)
 
-set(LIBSRCML_INCLUDE_DIRS /usr/local/include ${LIBXML2_INCLUDE_DIR})
+set(SRCML_INSTALL_PREFIX "/usr/local" CACHE PATH "Prefix where srcML is installed")
+set(LIBSRCML_INCLUDE_DIRS "${SRCML_INSTALL_PREFIX}/include" ${LIBXML2_INCLUDE_DIR})
 set(LIBSRCML_LIBRARIES srcml ${LIBXML2_LIBRARIES})
-link_directories(/usr/local/lib)
+link_directories("${SRCML_INSTALL_PREFIX}/lib")
 
 set(SRC_READER_INCLUDE_DIRS ${SRC_READER_SOURCE_DIR}/src ${LIBSRCML_INCLUDE_DIRS}  CACHE INTERNAL "Include directories for SRC_READER")
 set(SRC_READER_LIBRARIES ${LIBSRCML_LIBRARIES} CACHE INTERNAL "Libraries for SRC_READER")
