@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:diff="http://www.srcML.org/srcDiff" revision="1.0.0" language="C++" filename="test/simple/original.cpp|test/simple/modified.cpp"><function><type><name>int</name></type> <name>main</name><parameter_list>()</parameter_list> <block>{<block_content>
+<diff:delete><diff:ws>  </diff:ws><diff:delete move="1"><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>first</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">123</literal></expr></init></decl>;</decl_stmt></diff:delete><diff:ws>
+</diff:ws></diff:delete>  <decl_stmt><decl><type><name>int</name></type> <name>second</name> <init>= <expr><literal type="number">456</literal></expr></init></decl>;</decl_stmt>
+<diff:insert><diff:ws>  </diff:ws><diff:insert move="1"><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>first</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">123</literal></expr></init></decl>;</decl_stmt></diff:insert><diff:ws>
+</diff:ws></diff:insert>  <return>return <expr><literal type="number">0</literal></expr>;</return>
+</block_content>}</block></function>
+</unit>
