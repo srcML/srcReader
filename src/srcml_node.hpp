@@ -115,6 +115,16 @@ public:
   const std::string * get_attribute_value(const std::string & attribute) const;
   std::string * get_attribute_value(const std::string & attribute);
 
+  // Add or replace an attribute on this node.
+  // Returns a pointer to the stored attribute.
+  srcml_attribute *set_attribute(
+      const std::string &attribute_name,
+      const std::string &attribute_value,
+      std::shared_ptr<srcml_namespace> attribute_ns = SRC_NAMESPACE);
+
+  // Remove an attribute if present. Returns true if removed.
+  bool erase_attribute(const std::string &attribute_name);
+
   bool operator==(const srcml_node & node) const;
   bool operator!=(const srcml_node & node) const;
 

@@ -202,6 +202,23 @@ std::string * srcml_node::get_attribute_value(const std::string & attribute) {
 
 }
 
+srcml_node::srcml_attribute *srcml_node::set_attribute(
+    const std::string &attribute_name,
+    const std::string &attribute_value,
+    std::shared_ptr<srcml_namespace> attribute_ns) {
+
+  // Key in the map is the attribute name (same convention used by get_attribute()).
+  // Stored attribute must have the same name so full_name() remains consistent.
+  srcml_attribute attr(attribute_name, attribute_ns, attribute_value);
+  auto it = attributes.insert(std::make_pair(attribute_name, attr)).first;
+  it->second = std::move(attr);
+  return &it->second;
+}
+
+bool srcml_node::erase_attribute(const std::string &attribute_name) {
+  return attributes.erase(attribute_name) != 0;
+}
+
 bool srcml_node::operator==(const srcml_node & node) const {
   return type == node.type && name == node.name && content == node.content;
 }
