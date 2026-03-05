@@ -223,4 +223,25 @@ bool srcml_reader::srcml_reader_iterator::operator!=(const srcml_reader_iterator
   return *reader;
 }
 
+static void collect_text(xmlNodePtr node, std::string &out) {
+  for (xmlNodePtr cur = node; cur; cur = cur->next) {
+    if (cur->type == XML_TEXT_NODE || cur->type == XML_CDATA_SECTION_NODE) {
+      if (cur->content)
+        out.append(reinterpret_cast<const char *>(cur->content));
+    }
 
+    if (cur->children)
+      collect_text(cur->children, out);
+  }
+}
+
+
+std::string srcml_reader::get_current_inner_text() const {
+  xmlNodePtr subtree = xmlTextReaderExpand(reader);
+  if (!subtree)
+    throw srcml_reader_error("Error expanding current node");
+
+  std::string result;
+  collect_text(subtree->children, result); // children only = "inside the tag"
+  return result;
+}

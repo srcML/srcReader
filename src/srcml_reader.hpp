@@ -82,7 +82,7 @@ public:
   xmlNodePtr expand_current_node() const;
 
   operator bool() const;
-
+  std::string get_current_inner_text() const;
 };
 
 #endif
