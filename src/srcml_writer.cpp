@@ -80,34 +80,67 @@ bool srcml_writer::write(const srcml_node & node) {
 
 // typename std::unordered_map<std::string, std::function<int (srcml_archive *, const char *)::const_iterator archive_attr_map_citr;
 // std::unordered_map<std::string, std::function<int (srcml_archive *, const char *)>> archive_attr_map = {
-
 //     { "url", srcml_archive_set_url },
 // };
+void srcml_writer::set_archive_attr(
+    srcml_archive * archive,
+    const srcml_node::srcml_attribute_map & attributes) {
 
-void srcml_writer::set_unit_attr(srcml_unit * unit, const srcml_node::srcml_attribute_map & attributes) {
+  static std::function<int (srcml_archive *, const char *)> no_op =
+      [](srcml_archive * archive, const char * str) { return SRCML_STATUS_OK; };
 
-  static std::function<int (srcml_unit *, const char *)> no_op = [](srcml_unit * unit, const char * str) { return SRCML_STATUS_OK; };
-  typedef std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>>::const_iterator unit_attr_map_citr;
-  static std::unordered_map<std::string, std::function<int (srcml_unit *, const char *)>> unit_attr_map = {
+  typedef std::unordered_map<std::string,
+      std::function<int (srcml_archive *, const char *)>>::const_iterator
+      archive_attr_map_citr;
+
+  static std::unordered_map<std::string,
+      std::function<int (srcml_archive *, const char *)>> archive_attr_map = {
+    { "url",      srcml_archive_set_url },
+    { "revision", no_op },
+  };
+
+  for (const srcml_node::srcml_attribute_map_pair & attr : attributes) {
+    archive_attr_map_citr citr = archive_attr_map.find(attr.first);
+    if (citr != archive_attr_map.end()) {
+      check_srcml_error(
+          citr->second(archive, attr.second.value ? attr.second.value->c_str() : 0),
+          false,
+          "Error setting archive attribute: ",
+          attr.first.c_str());
+    }
+  }
+}
+
+void srcml_writer::set_unit_attr(srcml_unit * unit,
+                                 const srcml_node::srcml_attribute_map & attributes) {
+
+  static std::function<int (srcml_unit *, const char *)> no_op =
+      [](srcml_unit * unit, const char * str) { return SRCML_STATUS_OK; };
+
+  typedef std::unordered_map<std::string,
+      std::function<int (srcml_unit *, const char *)>>::const_iterator
+      unit_attr_map_citr;
+
+  static std::unordered_map<std::string,
+      std::function<int (srcml_unit *, const char *)>> unit_attr_map = {
     { "language", srcml_unit_set_language },
     { "filename", srcml_unit_set_filename },
-    { "hash"    , no_op },
+    { "hash",     no_op },
     { "revision", no_op },
-    { "author", no_op },
+    { "author",   no_op },
     { "modifier", no_op },
   };
 
-  for(const srcml_node::srcml_attribute_map_pair & attr : attributes) {
-
+  for (const srcml_node::srcml_attribute_map_pair & attr : attributes) {
     unit_attr_map_citr citr = unit_attr_map.find(attr.first);
-    if(citr != unit_attr_map.end()) {
-      check_srcml_error(unit_attr_map[attr.first](unit, attr.second.value ? attr.second.value->c_str() : 0), false, "Error setting archive", attr.first.c_str());
-    } else {
-      throw srcml_writer_error("Unimplemented attribute: " + attr.first);
+    if (citr != unit_attr_map.end()) {
+      check_srcml_error(
+          citr->second(unit, attr.second.value ? attr.second.value->c_str() : 0),
+          false,
+          "Error setting unit attribute: ",
+          attr.first.c_str());
     }
-
   }
-
 }
 
 bool srcml_writer::setup_archive(const srcml_node & node) {
@@ -116,13 +149,29 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
 
   for(const std::shared_ptr<srcml_node::srcml_namespace> & ns : node.ns_definition) {
     if(ns == srcml_node::SRC_NAMESPACE) continue;
-    check_srcml_error(srcml_archive_register_namespace(archive, ns->prefix ? ns->prefix->c_str() : 0, ns->uri.c_str()),
-                      false, "Error error registering namespace: ", ns->uri.c_str());
+    check_srcml_error(
+        srcml_archive_register_namespace(
+            archive,
+            ns->prefix ? ns->prefix->c_str() : 0,
+            ns->uri.c_str()),
+        false,
+        "Error registering namespace: ",
+        ns->uri.c_str());
   }
 
+  // Root <unit> may represent either:
+  // - a solitary single-file document  (filename present)
+  // - an archive root                  (url present, usually no filename)
+  //
+  // Archive-level metadata must be applied to the archive, not the unit.
+  set_archive_attr(archive, node.attributes);
+
+  // For single-file roots, we still want unit attrs immediately.
+  // For archive roots, filename usually is absent so this is harmless.
   set_unit_attr(unit, node.attributes);
 
-  write_process_map[srcml_node::srcml_node_type::START] = std::bind(&srcml_writer::write_start_first, this, std::placeholders::_1);
+  write_process_map[srcml_node::srcml_node_type::START] =
+      std::bind(&srcml_writer::write_start_first, this, std::placeholders::_1);
 
   return true;
 }
