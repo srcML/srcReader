@@ -384,27 +384,62 @@ std::string srcml_reader::semantic_predicate(xmlNodePtr node) const {
   const char *local_name = reinterpret_cast<const char *>(node->name);
   static const char *SRC_URI = "http://www.srcML.org/srcML/src";
 
+  // File unit inside an archive:
+  //   /src:unit/src:unit[@filename="foo.cpp"]
+  // Root archive unit should remain just /src:unit
   if (std::strcmp(local_name, "unit") == 0) {
-    const xmlAttr *filename_attr = find_attribute(node, "filename");
-    if (filename_attr &&
-        filename_attr->children &&
-        filename_attr->children->content) {
-      std::string pred = "[@filename=";
-      pred += escape_xpath_string(
-          reinterpret_cast<const char *>(filename_attr->children->content));
-      pred += "]";
-      return pred;
+    const bool parent_is_unit =
+        node->parent &&
+        node->parent->type == XML_ELEMENT_NODE &&
+        xmlStrEqual(node->parent->name, BAD_CAST "unit");
+
+    if (parent_is_unit) {
+      const xmlAttr *filename_attr = find_attribute(node, "filename");
+      if (filename_attr &&
+          filename_attr->children &&
+          filename_attr->children->content) {
+        std::string pred = "[@filename=";
+        pred += escape_xpath_string(
+            reinterpret_cast<const char *>(filename_attr->children->content));
+        pred += "]";
+        return pred;
+      }
+    }
+
+    return "";
+  }
+
+  // srcML style:
+  //   //src:function[src:name='foo']
+  if (std::strcmp(local_name, "function") == 0 ||
+      std::strcmp(local_name, "function_decl") == 0 ||
+      std::strcmp(local_name, "constructor") == 0 ||
+      std::strcmp(local_name, "destructor") == 0) {
+    const xmlNode *name_node = find_child_element(node, "name", SRC_URI);
+    if (name_node) {
+      const std::string name_text =
+          get_node_inner_text(const_cast<xmlNodePtr>(name_node));
+      if (!name_text.empty()) {
+        std::string pred = "[src:name=";
+        pred += escape_xpath_string(name_text.c_str());
+        pred += "]";
+        return pred;
+      }
     }
   }
 
-  if (std::strcmp(local_name, "function") == 0) {
+  // Variable declarations: /src:decl[src:name='x']
+  if (std::strcmp(local_name, "decl") == 0 ||
+      std::strcmp(local_name, "param") == 0 ||
+      std::strcmp(local_name, "typedef") == 0) {
     const xmlNode *name_node = find_child_element(node, "name", SRC_URI);
     if (name_node) {
-      const std::string fn_name = get_node_inner_text(const_cast<xmlNodePtr>(name_node));
-      if (!fn_name.empty()) {
-        std::string pred = "[src:name[text()=";
-        pred += escape_xpath_string(fn_name.c_str());
-        pred += "]]";
+      const std::string name_text =
+          get_node_inner_text(const_cast<xmlNodePtr>(name_node));
+      if (!name_text.empty()) {
+        std::string pred = "[src:name=";
+        pred += escape_xpath_string(name_text.c_str());
+        pred += "]";
         return pred;
       }
     }
@@ -452,19 +487,49 @@ const xmlNode *srcml_reader::find_child_element(xmlNodePtr node,
 std::string srcml_reader::escape_xpath_string(const char *text) const {
   if (!text)
     return "\"\"";
-  std::string out;
-  out.push_back('"');
-  for (const char *p = text; *p; ++p) {
-    switch (*p) {
-      case '"': out += "&quot;"; break;
-      case '\n': out += "&#10;"; break;
-      case '\r': out += "&#13;"; break;
-      case '\t': out += "&#9;"; break;
-      default: out.push_back(*p); break;
+
+  const std::string s(text);
+
+  // Prefer double quotes if possible.
+  if (s.find('"') == std::string::npos) {
+    return "\"" + s + "\"";
+  }
+
+  // Otherwise prefer single quotes.
+  if (s.find('\'') == std::string::npos) {
+    return "'" + s + "'";
+  }
+
+  // If both quote types appear, build concat(...)
+  std::string out = "concat(";
+  bool first = true;
+  std::size_t start = 0;
+
+  for (std::size_t i = 0; i < s.size(); ++i) {
+    if (s[i] == '"' || s[i] == '\'') {
+      if (i > start) {
+        if (!first) out += ", ";
+        out += "\"" + s.substr(start, i - start) + "\"";
+        first = false;
+      }
+
+      if (!first) out += ", ";
+      if (s[i] == '"')
+        out += "'\"'";
+      else
+        out += "\"'\"";
+      first = false;
+
+      start = i + 1;
     }
   }
 
-  out.push_back('"');
+  if (start < s.size()) {
+    if (!first) out += ", ";
+    out += "\"" + s.substr(start) + "\"";
+  }
+
+  out += ")";
   return out;
 }
 

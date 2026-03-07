@@ -77,7 +77,6 @@ private:
   std::size_t sibling_position(xmlNodePtr node) const;
   std::string semantic_predicate(xmlNodePtr node) const;
   const xmlAttr * find_attribute(xmlNodePtr node, const char *name) const;
-  const xmlNode * find_child_element(xmlNodePtr node, const char *name) const;
   std::string escape_xpath_string(const char *text) const;
   const char * canonical_prefix(xmlNodePtr node) const;
   const xmlNode * find_child_element(xmlNodePtr node, const char *local_name,
