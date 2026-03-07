@@ -69,11 +69,16 @@ private:
   srcml_reader_iterator iterator;
 
   std::stack<std::string> element_stack;
+
+  // helpers for xpath generation
   std::string build_xpath(xmlNodePtr node) const;
   std::string build_segment(xmlNodePtr node) const;
   std::string node_qname(xmlNodePtr node) const;
-  size_t sibling_position(xmlNodePtr node) const;
+  std::size_t sibling_position(xmlNodePtr node) const;
   std::string semantic_predicate(xmlNodePtr node) const;
+  const xmlAttr * find_attribute(xmlNodePtr node, const char *name) const;
+  const xmlNode * find_child_element(xmlNodePtr node, const char *name) const;
+  std::string escape_xpath_string(const char *text) const;
 
 public:
   srcml_reader(const std::string & filename);
