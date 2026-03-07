@@ -237,6 +237,26 @@ static void collect_text(xmlNodePtr node, std::string &out) {
   }
 }
 
+bool srcml_reader::has_same_named_sibling(xmlNodePtr node) const {
+  if (!node)
+    return false;
+
+  for (xmlNodePtr sib = node->prev; sib; sib = sib->prev) {
+    if (sib->type != XML_ELEMENT_NODE)
+      continue;
+    if (same_expanded_name(sib, node))
+      return true;
+  }
+
+  for (xmlNodePtr sib = node->next; sib; sib = sib->next) {
+    if (sib->type != XML_ELEMENT_NODE)
+      continue;
+    if (same_expanded_name(sib, node))
+      return true;
+  }
+
+  return false;
+}
 
 std::string srcml_reader::get_current_inner_text() const {
   xmlNodePtr subtree = xmlTextReaderExpand(reader);
@@ -254,9 +274,8 @@ std::string srcml_reader::build_segment(xmlNodePtr node) const {
   if (!predicate.empty()) {
     return qname + predicate;
   }
-  const std::size_t pos = sibling_position(node);
-  if (pos > 1) {
-    return qname + "[" + std::to_string(pos) + "]";
+  if (has_same_named_sibling(node)) {
+    return qname + "[" + std::to_string(sibling_position(node)) + "]";
   }
   return qname;
 }
@@ -327,21 +346,45 @@ std::size_t srcml_reader::sibling_position(xmlNodePtr node) const {
   for (xmlNodePtr sib = node->prev; sib; sib = sib->prev) {
     if (sib->type != XML_ELEMENT_NODE)
       continue;
-    if (sib->ns == node->ns && xmlStrEqual(sib->name, node->name)) {
+    if (same_expanded_name(sib, node))
       ++index;
-    }
   }
   return index;
+}
+
+std::string srcml_reader::get_node_inner_text(xmlNodePtr node) const {
+  if (!node)
+    return "";
+  std::string result;
+  collect_text(node->children, result);
+  return result;
+}
+
+bool srcml_reader::same_expanded_name(xmlNodePtr a, xmlNodePtr b) const {
+  if (!a || !b)
+    return false;
+  if (!xmlStrEqual(a->name, b->name))
+    return false;
+
+  const xmlChar *a_href = (a->ns && a->ns->href) ? a->ns->href : nullptr;
+  const xmlChar *b_href = (b->ns && b->ns->href) ? b->ns->href : nullptr;
+
+  if (!a_href && !b_href)
+    return true;
+  if (!a_href || !b_href)
+    return false;
+
+  return xmlStrEqual(a_href, b_href);
 }
 
 std::string srcml_reader::semantic_predicate(xmlNodePtr node) const {
   if (!node || node->type != XML_ELEMENT_NODE || !node->name)
     return "";
 
-  const char *name = reinterpret_cast<const char *>(node->name);
+  const char *local_name = reinterpret_cast<const char *>(node->name);
+  static const char *SRC_URI = "http://www.srcML.org/srcML/src";
 
-  // src:unit[@filename="foo.cpp"]
-  if (std::strcmp(name, "unit") == 0) {
+  if (std::strcmp(local_name, "unit") == 0) {
     const xmlAttr *filename_attr = find_attribute(node, "filename");
     if (filename_attr &&
         filename_attr->children &&
@@ -354,15 +397,16 @@ std::string srcml_reader::semantic_predicate(xmlNodePtr node) const {
     }
   }
 
-  // src:function[src:name[text()="foo"]]
-  if (std::strcmp(name, "function") == 0) {
-    const xmlNode *name_node = find_child_element(node, "name");
-    if (name_node && name_node->children && name_node->children->content) {
-      std::string pred = "[src:name[text()=";
-      pred += escape_xpath_string(
-          reinterpret_cast<const char *>(name_node->children->content));
-      pred += "]]";
-      return pred;
+  if (std::strcmp(local_name, "function") == 0) {
+    const xmlNode *name_node = find_child_element(node, "name", SRC_URI);
+    if (name_node) {
+      const std::string fn_name = get_node_inner_text(const_cast<xmlNodePtr>(name_node));
+      if (!fn_name.empty()) {
+        std::string pred = "[src:name[text()=";
+        pred += escape_xpath_string(fn_name.c_str());
+        pred += "]]";
+        return pred;
+      }
     }
   }
 
@@ -380,33 +424,46 @@ const xmlAttr * srcml_reader::find_attribute(xmlNodePtr node, const char *name) 
   return nullptr;
 }
 
-const xmlNode * srcml_reader::find_child_element(xmlNodePtr node, const char *name) const {
-  if (!node || !name)
+const xmlNode *srcml_reader::find_child_element(xmlNodePtr node,
+                                                const char *local_name,
+                                                const char *namespace_uri) const {
+  if (!node || !local_name)
     return nullptr;
 
   for (xmlNodePtr child = node->children; child; child = child->next) {
     if (child->type != XML_ELEMENT_NODE)
       continue;
 
-    if (xmlStrEqual(child->name, BAD_CAST name)) {
+    if (!xmlStrEqual(child->name, BAD_CAST local_name))
+      continue;
+
+    if (!namespace_uri)
+      return child;
+
+    if (child->ns && child->ns->href &&
+        std::strcmp(reinterpret_cast<const char *>(child->ns->href),
+                    namespace_uri) == 0) {
       return child;
     }
   }
-
   return nullptr;
 }
 
 std::string srcml_reader::escape_xpath_string(const char *text) const {
   if (!text)
     return "\"\"";
-  std::string out = "\"";
+  std::string out;
+  out.push_back('"');
   for (const char *p = text; *p; ++p) {
-    if (*p == '"') {
-      out += "&quot;";
-    } else {
-      out.push_back(*p);
+    switch (*p) {
+      case '"': out += "&quot;"; break;
+      case '\n': out += "&#10;"; break;
+      case '\r': out += "&#13;"; break;
+      case '\t': out += "&#9;"; break;
+      default: out.push_back(*p); break;
     }
   }
+
   out.push_back('"');
   return out;
 }

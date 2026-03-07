@@ -80,6 +80,11 @@ private:
   const xmlNode * find_child_element(xmlNodePtr node, const char *name) const;
   std::string escape_xpath_string(const char *text) const;
   const char * canonical_prefix(xmlNodePtr node) const;
+  const xmlNode * find_child_element(xmlNodePtr node, const char *local_name,
+                                    const char *namespace_uri = nullptr) const;
+  bool has_same_named_sibling(xmlNodePtr node) const;
+  std::string get_node_inner_text(xmlNodePtr node) const;
+  bool same_expanded_name(xmlNodePtr a, xmlNodePtr b) const;
 
 public:
   srcml_reader(const std::string & filename);
