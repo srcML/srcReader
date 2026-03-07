@@ -1,5 +1,5 @@
 /src:unit/src:unit[@filename="main.cpp"]
 /src:unit/src:unit[@filename="main.cpp"]/src:function[src:name="main"]
-/src:unit/src:unit[@filename="main.cpp"]/src:function/src:block/src:block_content/diff:delete
-/src:unit/src:unit[@filename="main.cpp"]/src:function/src:block/src:block_content/diff:delete/src:decl_stmt[1]/src:decl[src:name="a"]
-/src:unit/src:unit[@filename="main.cpp"]/src:function/src:block/src:block_content/diff:insert/src:return
+/src:unit/src:unit[@filename="main.cpp"]/src:function[src:name="main"]/src:block/src:block_content/diff:delete
+/src:unit/src:unit[@filename="main.cpp"]/src:function[src:name="main"]/src:block/src:block_content/diff:delete/src:decl_stmt[1]/src:decl[src:name="a"]
+/src:unit/src:unit[@filename="main.cpp"]/src:function[src:name="main"]/src:block/src:block_content/diff:insert/src:return

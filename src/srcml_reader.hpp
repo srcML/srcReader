@@ -31,6 +31,7 @@
 #include <string>
 #include <memory>
 #include <stack>
+#include <vector>
 
 class srcml_reader_error;
 
@@ -69,11 +70,11 @@ private:
   srcml_reader_iterator iterator;
 
   std::stack<std::string> element_stack;
+  std::vector<std::string> xpath_stack;
 
   // helpers for xpath generation
   bool is_structurally_simple_name(xmlNodePtr name_node) const;
   bool is_simple_name_for_xpath(const std::string &s) const;
-  std::string build_xpath(xmlNodePtr node) const;
   std::string build_segment(xmlNodePtr node) const;
   std::string node_qname(xmlNodePtr node) const;
   std::size_t sibling_position(xmlNodePtr node) const;

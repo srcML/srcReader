@@ -94,7 +94,7 @@ bool srcml_reader::read() {
     update_current_text_node();
     return true;
 
-  } else if(issue_end_tag) {
+  } else if (issue_end_tag) {
     issue_end_tag = false;
 
     current_node = std::make_unique<srcml_node>(*current_node);
@@ -102,12 +102,13 @@ bool srcml_reader::read() {
     current_node->attributes.clear();
     current_node->ns_definition.clear();
 
-    if(element_stack.size() > 1) {
+    if (!element_stack.empty())
       element_stack.pop();
-    } 
+
+    if (!xpath_stack.empty())
+      xpath_stack.pop_back();
 
     return true;
-
   }
 
   int success = xmlTextReaderRead(reader);
@@ -142,10 +143,18 @@ bool srcml_reader::read() {
       current_node->empty = false;
     }
 
-    if(current_node->is_start()) {
+    if (current_node->is_start()) {
       element_stack.push(current_node->full_name());
-    } else if(current_node->is_end()){
+
+      xmlNodePtr expanded = xmlTextReaderExpand(reader);
+      if (!expanded)
+        throw srcml_reader_error("Error expanding current node");
+
+      xpath_stack.push_back(build_segment(expanded));
+    } else if (current_node->is_end()) {
       element_stack.pop();
+      if (!xpath_stack.empty())
+        xpath_stack.pop_back();
     }
   }
   return true;
@@ -280,28 +289,6 @@ std::string srcml_reader::build_segment(xmlNodePtr node) const {
   return qname;
 }
 
-std::string srcml_reader::build_xpath(xmlNodePtr node) const {
-  std::vector<std::string> segments;
-  for (xmlNodePtr cur = node; cur; cur = cur->parent) {
-    if (cur->type != XML_ELEMENT_NODE)
-      continue;
-
-    segments.push_back(build_segment(cur));
-  }
-  std::reverse(segments.begin(), segments.end());
-  std::size_t total_size = 0;
-  for (const auto &segment : segments) {
-    total_size += 1 + segment.size();
-  }
-  std::string path;
-  path.reserve(total_size);
-
-  for (const auto &segment : segments) {
-    path.push_back('/');
-    path += segment;
-  }
-  return path;
-}
 
 const char *srcml_reader::canonical_prefix(xmlNodePtr node) const {
   if (!node || !node->ns || !node->ns->href)
@@ -556,19 +543,18 @@ std::string srcml_reader::escape_xpath_string(const char *text) const {
   return out;
 }
 
-// O(depth + siblings)
 std::string srcml_reader::get_current_xpath() const {
-  xmlNodePtr node = xmlTextReaderExpand(reader);
-  if (!node)
-    throw srcml_reader_error("Error expanding current node");
-
-  // If reader somehow lands on a text node, use its parent element.
-  while (node && node->type != XML_ELEMENT_NODE) {
-    node = node->parent;
+  if (xpath_stack.empty())
+    return "";
+  std::size_t total_size = 0;
+  for (const auto &segment : xpath_stack) {
+    total_size += 1 + segment.size();
   }
-
-  if (!node)
-    throw srcml_reader_error("Current node is not an element");
-
-  return build_xpath(node);
+  std::string path;
+  path.reserve(total_size);
+  for (const auto &segment : xpath_stack) {
+    path.push_back('/');
+    path += segment;
+  }
+  return path;
 }
