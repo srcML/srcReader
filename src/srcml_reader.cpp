@@ -108,6 +108,9 @@ bool srcml_reader::read() {
     if (!xpath_stack.empty())
       xpath_stack.pop_back();
 
+    if (!child_count_stack.empty())
+      child_count_stack.pop_back();
+
     return true;
   }
 
@@ -150,11 +153,28 @@ bool srcml_reader::read() {
       if (!expanded)
         throw srcml_reader_error("Error expanding current node");
 
-      xpath_stack.push_back(build_segment(expanded));
+      std::size_t seen_sibling_index = 1;
+
+      // Count this element among its parent's direct child elements
+      // using only its qualified element name, not its semantic predicate.
+      if (!child_count_stack.empty()) {
+        const std::string sibling_key = node_qname(expanded);
+        seen_sibling_index = ++child_count_stack.back()[sibling_key];
+      }
+
+      xpath_stack.push_back(build_segment(expanded, seen_sibling_index));
+
+      // Prepare a fresh child-count frame for this element's own children.
+      child_count_stack.emplace_back();
     } else if (current_node->is_end()) {
-      element_stack.pop();
+      if (!element_stack.empty())
+        element_stack.pop();
+
       if (!xpath_stack.empty())
         xpath_stack.pop_back();
+
+      if (!child_count_stack.empty())
+        child_count_stack.pop_back();
     }
   }
   return true;
@@ -277,15 +297,27 @@ std::string srcml_reader::get_current_inner_text() const {
   return result;
 }
 
-std::string srcml_reader::build_segment(xmlNodePtr node) const {
+std::string srcml_reader::build_segment(xmlNodePtr node,
+                                        std::size_t seen_sibling_index) const {
   const std::string qname = node_qname(node);
   const std::string predicate = semantic_predicate(node);
+
   if (!predicate.empty()) {
     return qname + predicate;
   }
+
+  // If streaming state already knows this is the 2nd/3rd/etc sibling
+  // with the same expanded name under the same parent, trust that.
+  if (seen_sibling_index > 1) {
+    return qname + "[" + std::to_string(seen_sibling_index) + "]";
+  }
+
+  // For the first sibling, we still want [1] when there are later
+  // same-named siblings. Keep the DOM-based fallback for that case.
   if (has_same_named_sibling(node)) {
     return qname + "[" + std::to_string(sibling_position(node)) + "]";
   }
+
   return qname;
 }
 

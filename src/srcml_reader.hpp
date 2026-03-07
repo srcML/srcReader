@@ -31,6 +31,7 @@
 #include <string>
 #include <memory>
 #include <stack>
+#include <unordered_map>
 #include <vector>
 
 class srcml_reader_error;
@@ -71,11 +72,13 @@ private:
 
   std::stack<std::string> element_stack;
   std::vector<std::string> xpath_stack;
+  std::vector<std::unordered_map<std::string, std::size_t>> child_count_stack;
 
   // helpers for xpath generation
   bool is_structurally_simple_name(xmlNodePtr name_node) const;
   bool is_simple_name_for_xpath(const std::string &s) const;
-  std::string build_segment(xmlNodePtr node) const;
+  std::string build_segment(xmlNodePtr node,
+                            std::size_t seen_sibling_index = 0) const;
   std::string node_qname(xmlNodePtr node) const;
   std::size_t sibling_position(xmlNodePtr node) const;
   std::string semantic_predicate(xmlNodePtr node) const;
