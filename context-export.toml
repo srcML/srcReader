@@ -1,0 +1,31 @@
+# context-export.toml
+#
+# Patterns use .gitignore-style matching (gitwildmatch semantics).
+
+[context_export]
+# Exclusions apply to the FILE LIST (directory listing).
+# Important files override these exclusions (except .git, which is always excluded).
+exclude_from_dir_list = [
+  ".git/",
+  ".venv/",
+  "__pycache__/",
+  ".vscode",
+  ".cache",
+  "build/",
+  "node_modules/",
+]
+
+# Files whose contents will always be included under "IMPORTANT FILE CONTENTS".
+# Globs are allowed.
+important_files = [
+  # "README.md",
+  # "context-export.toml",
+  "docs/",
+  "src/**/*",
+  "test/cases/*",
+  "test/print_xpaths.cpp",
+  "test/run_xpath_tests.py",
+]
+
+# If true, also apply patterns from the project's root .gitignore to the FILE LIST.
+respect_gitignore = true
