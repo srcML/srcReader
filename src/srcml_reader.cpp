@@ -20,13 +20,12 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
+#include <srcml_reader.hpp>
 
 #include <algorithm>
-#include <srcml_reader.hpp>
+#include <cstring>
 #include <vector>
 #include <string>
-
-#include <iostream>
 
 class srcml_reader_error : public std::runtime_error {
 public:
@@ -285,22 +284,42 @@ std::string srcml_reader::build_xpath(xmlNodePtr node) const {
   return path;
 }
 
+const char *srcml_reader::canonical_prefix(xmlNodePtr node) const {
+  if (!node || !node->ns || !node->ns->href)
+    return nullptr;
+
+  const char *uri = reinterpret_cast<const char *>(node->ns->href);
+
+  if (std::strcmp(uri, "http://www.srcML.org/srcML/src") == 0)
+    return "src";
+  if (std::strcmp(uri, "http://www.srcML.org/srcDiff") == 0)
+    return "diff";
+  if (std::strcmp(uri, "http://www.srcML.org/srcMove") == 0)
+    return "mv";
+
+  // Fallback for any other namespace actually carrying a prefix.
+  if (node->ns->prefix)
+    return reinterpret_cast<const char *>(node->ns->prefix);
+
+  return nullptr;
+}
+
 std::string srcml_reader::node_qname(xmlNodePtr node) const {
-  const char *local_name = reinterpret_cast<const char *>(node->name);
-  if (!local_name)
+  if (!node || !node->name)
     return "";
 
-  if (node->ns && node->ns->prefix) {
-    const char *prefix = reinterpret_cast<const char *>(node->ns->prefix);
-    std::string out;
-    out.reserve(std::strlen(prefix) + 1 + std::strlen(local_name));
-    out += prefix;
-    out.push_back(':');
-    out += local_name;
-    return out;
-  }
+  const char *local_name = reinterpret_cast<const char *>(node->name);
+  const char *prefix = canonical_prefix(node);
 
-  return std::string(local_name);
+  if (!prefix)
+    return std::string(local_name);
+
+  std::string out;
+  out.reserve(std::strlen(prefix) + 1 + std::strlen(local_name));
+  out += prefix;
+  out.push_back(':');
+  out += local_name;
+  return out;
 }
 
 std::size_t srcml_reader::sibling_position(xmlNodePtr node) const {

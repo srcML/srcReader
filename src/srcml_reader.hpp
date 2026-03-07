@@ -79,6 +79,7 @@ private:
   const xmlAttr * find_attribute(xmlNodePtr node, const char *name) const;
   const xmlNode * find_child_element(xmlNodePtr node, const char *name) const;
   std::string escape_xpath_string(const char *text) const;
+  const char * canonical_prefix(xmlNodePtr node) const;
 
 public:
   srcml_reader(const std::string & filename);
