@@ -1,7 +1,7 @@
 /src:unit/src:function[src:name="helper"]
 /src:unit/src:function[src:name="main"]
-/src:unit/src:function[src:name="main"]/src:block/src:block_content/src:decl_stmt/src:decl[src:name="second"]
-/src:unit/src:function[src:name="main"]/src:block/src:block_content/src:decl_stmt/src:decl[src:name="value"]/src:init/src:expr/src:call/src:argument_list
+/src:unit/src:function[src:name="main"]/src:block/src:block_content/src:decl_stmt[1]/src:decl[src:name="second"]
+/src:unit/src:function[src:name="main"]/src:block/src:block_content/src:decl_stmt[3]/src:decl[src:name="value"]/src:init/src:expr/src:call/src:argument_list
 /src:unit/src:function[src:name="main"]/src:block/src:block_content/src:if_stmt/src:if/src:condition
-/src:unit/src:function[src:name="main"]/src:block/src:block_content/diff:insert/src:for
+/src:unit/src:function[src:name="main"]/src:block/src:block_content/diff:insert[2]/src:for
 /src:unit/src:function[src:name="main"]/src:block/src:block_content/diff:delete

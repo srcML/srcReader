@@ -71,6 +71,8 @@ private:
   std::stack<std::string> element_stack;
 
   // helpers for xpath generation
+  bool is_structurally_simple_name(xmlNodePtr name_node) const;
+  bool is_simple_name_for_xpath(const std::string &s) const;
   std::string build_xpath(xmlNodePtr node) const;
   std::string build_segment(xmlNodePtr node) const;
   std::string node_qname(xmlNodePtr node) const;

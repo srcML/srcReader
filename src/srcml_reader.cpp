@@ -377,6 +377,31 @@ bool srcml_reader::same_expanded_name(xmlNodePtr a, xmlNodePtr b) const {
   return xmlStrEqual(a_href, b_href);
 }
 
+bool srcml_reader::is_simple_name_for_xpath(const std::string &s) const {
+  if (s.empty())
+    return false;
+  // Conservative rule: only allow plain identifiers and a few safe symbols.
+  for (char ch : s) {
+    if (std::isalnum(static_cast<unsigned char>(ch)) || ch == '_' || ch == ':' || ch == '~')
+      continue;
+    return false;
+  }
+  return true;
+}
+
+bool srcml_reader::is_structurally_simple_name(xmlNodePtr name_node) const {
+  if (!name_node)
+    return false;
+  for (xmlNodePtr child = name_node->children; child; child = child->next) {
+    if (child->type == XML_TEXT_NODE || child->type == XML_CDATA_SECTION_NODE)
+      continue;
+    // Any element child means mixed structure: reject.
+    return false;
+  }
+
+  return true;
+}
+
 std::string srcml_reader::semantic_predicate(xmlNodePtr node) const {
   if (!node || node->type != XML_ELEMENT_NODE || !node->name)
     return "";
@@ -384,65 +409,63 @@ std::string srcml_reader::semantic_predicate(xmlNodePtr node) const {
   const char *local_name = reinterpret_cast<const char *>(node->name);
   static const char *SRC_URI = "http://www.srcML.org/srcML/src";
 
-  // File unit inside an archive:
-  //   /src:unit/src:unit[@filename="foo.cpp"]
-  // Root archive unit should remain just /src:unit
+  // Nested file unit inside an archive:
+  //   /src:unit/src:unit[@filename="main.cpp"]
+  // Keep the root archive unit as just /src:unit.
   if (std::strcmp(local_name, "unit") == 0) {
     const bool parent_is_unit =
         node->parent &&
         node->parent->type == XML_ELEMENT_NODE &&
+        node->parent->name &&
         xmlStrEqual(node->parent->name, BAD_CAST "unit");
 
-    if (parent_is_unit) {
-      const xmlAttr *filename_attr = find_attribute(node, "filename");
-      if (filename_attr &&
-          filename_attr->children &&
-          filename_attr->children->content) {
-        std::string pred = "[@filename=";
-        pred += escape_xpath_string(
-            reinterpret_cast<const char *>(filename_attr->children->content));
-        pred += "]";
-        return pred;
-      }
+    if (!parent_is_unit)
+      return "";
+
+    const xmlAttr *filename_attr = find_attribute(node, "filename");
+    if (!filename_attr || !filename_attr->children ||
+        !filename_attr->children->content) {
+      return "";
     }
 
-    return "";
+    std::string pred = "[@filename=";
+    pred += escape_xpath_string(
+        reinterpret_cast<const char *>(filename_attr->children->content));
+    pred += "]";
+    return pred;
   }
 
-  // srcML style:
-  //   //src:function[src:name='foo']
+  auto make_name_predicate = [&](const xmlNode *name_node) -> std::string {
+    if (!name_node)
+      return "";
+
+    xmlNodePtr mutable_name_node = const_cast<xmlNodePtr>(name_node);
+    if (!is_structurally_simple_name(mutable_name_node))
+      return "";
+
+    const std::string name_text = get_node_inner_text(mutable_name_node);
+    if (name_text.empty() || !is_simple_name_for_xpath(name_text))
+      return "";
+
+    std::string pred = "[src:name=";
+    pred += escape_xpath_string(name_text.c_str());
+    pred += "]";
+    return pred;
+  };
+
+  // Named callable/program elements.
   if (std::strcmp(local_name, "function") == 0 ||
       std::strcmp(local_name, "function_decl") == 0 ||
       std::strcmp(local_name, "constructor") == 0 ||
       std::strcmp(local_name, "destructor") == 0) {
-    const xmlNode *name_node = find_child_element(node, "name", SRC_URI);
-    if (name_node) {
-      const std::string name_text =
-          get_node_inner_text(const_cast<xmlNodePtr>(name_node));
-      if (!name_text.empty()) {
-        std::string pred = "[src:name=";
-        pred += escape_xpath_string(name_text.c_str());
-        pred += "]";
-        return pred;
-      }
-    }
+    return make_name_predicate(find_child_element(node, "name", SRC_URI));
   }
 
-  // Variable declarations: /src:decl[src:name='x']
+  // Named declaration-like elements.
   if (std::strcmp(local_name, "decl") == 0 ||
       std::strcmp(local_name, "param") == 0 ||
       std::strcmp(local_name, "typedef") == 0) {
-    const xmlNode *name_node = find_child_element(node, "name", SRC_URI);
-    if (name_node) {
-      const std::string name_text =
-          get_node_inner_text(const_cast<xmlNodePtr>(name_node));
-      if (!name_text.empty()) {
-        std::string pred = "[src:name=";
-        pred += escape_xpath_string(name_text.c_str());
-        pred += "]";
-        return pred;
-      }
-    }
+    return make_name_predicate(find_child_element(node, "name", SRC_URI));
   }
 
   return "";
