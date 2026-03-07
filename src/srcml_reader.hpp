@@ -69,6 +69,11 @@ private:
   srcml_reader_iterator iterator;
 
   std::stack<std::string> element_stack;
+  std::string build_xpath(xmlNodePtr node) const;
+  std::string build_segment(xmlNodePtr node) const;
+  std::string node_qname(xmlNodePtr node) const;
+  size_t sibling_position(xmlNodePtr node) const;
+  std::string semantic_predicate(xmlNodePtr node) const;
 
 public:
   srcml_reader(const std::string & filename);
@@ -80,6 +85,7 @@ public:
   srcml_reader_iterator end();
   xmlDocPtr get_current_doc() const;
   xmlNodePtr expand_current_node() const;
+  std::string get_current_xpath() const;
 
   operator bool() const;
   std::string get_current_inner_text() const;
