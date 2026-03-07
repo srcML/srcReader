@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:diff="http://www.srcML.org/srcDiff" revision="1.0.0" url="original|modified">
+
+<unit revision="1.0.0" language="C++" filename="main.cpp"><function><type><name>int</name></type> <name>main</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>argc</name></decl></parameter>, <parameter><decl><type><name>char</name> <modifier>*</modifier><modifier>*</modifier></type><name>argv</name></decl></parameter>)</parameter_list> <block>{<block_content>
+<diff:delete type="replace"><diff:ws>  </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>a</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><call><name>test</name><argument_list>()</argument_list></call></expr></init></decl>;</decl_stmt><diff:ws>
+  </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>add</name><argument_list>(<argument><expr><name>int</name><diff:ws> </diff:ws><name>a</name></expr></argument>,<argument><expr><name>int</name><diff:ws> </diff:ws><name>b</name></expr></argument>)</argument_list><diff:ws>
+  </diff:ws><name>int</name><diff:ws> </diff:ws><name>multiply</name><argument_list>(<argument><expr><name>int</name><diff:ws> </diff:ws><name>a</name></expr></argument>,<argument><expr><name>int</name><diff:ws> </diff:ws><name>b</name></expr></argument>)</argument_list><diff:ws>
+  </diff:ws><name>int</name><diff:ws> </diff:ws>main<argument_list>()</argument_list><diff:ws>
+  </diff:ws>return<diff:ws> </diff:ws>1</decl>;</decl_stmt></diff:delete><diff:insert type="replace"><diff:ws>  </diff:ws><return>return<diff:ws> </diff:ws><expr><literal type="number">1</literal></expr>;</return></diff:insert>
+</block_content>}</block></function>
+</unit>
+
+<unit xmlns:cpp="http://www.srcML.org/srcML/cpp" revision="1.0.0" language="C++" filename="|modified.cpp"><diff:insert><cpp:include>#<cpp:directive>include</cpp:directive><diff:ws> </diff:ws><cpp:file>&lt;iostream&gt;</cpp:file></cpp:include><diff:ws>
+
+</diff:ws><function><type><name>int</name></type><diff:ws> </diff:ws><name>helper</name><parameter_list>(<parameter><decl><type><name>int</name></type><diff:ws> </diff:ws><name>x</name></decl></parameter>)</parameter_list><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>doubled</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><name>x</name><diff:ws> </diff:ws><operator>*</operator><diff:ws> </diff:ws><literal type="number">2</literal></expr></init></decl>;</decl_stmt><diff:ws>
+    </diff:ws><return>return<diff:ws> </diff:ws><expr><name>doubled</name></expr>;</return><diff:ws>
+</diff:ws></block_content>}</block></function><diff:ws>
+
+</diff:ws><function><type><name>int</name></type><diff:ws> </diff:ws><name>main</name><parameter_list>()</parameter_list><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>second</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">20</literal></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>first</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">10</literal></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>total</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><name>first</name><diff:ws> </diff:ws><operator>+</operator><diff:ws> </diff:ws><name>second</name><diff:ws> </diff:ws><operator>+</operator><diff:ws> </diff:ws><literal type="number">5</literal></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><if_stmt><if>if<diff:ws> </diff:ws><condition>(<expr><name>total</name><diff:ws> </diff:ws><operator>&gt;=</operator><diff:ws> </diff:ws><literal type="number">25</literal></expr>)</condition><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+        </diff:ws><expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><literal type="string">"very<diff:ws> </diff:ws>large"</literal><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt><diff:ws>
+    </diff:ws></block_content>}</block></if></if_stmt><diff:ws>
+
+    </diff:ws><for>for<diff:ws> </diff:ws><control>(<init><decl><type><name>int</name></type><diff:ws> </diff:ws><name>i</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">0</literal></expr></init></decl>;</init><diff:ws> </diff:ws><condition><expr><name>i</name><diff:ws> </diff:ws><operator>&lt;</operator><diff:ws> </diff:ws><literal type="number">3</literal></expr>;</condition><diff:ws> </diff:ws><incr><expr><name>i</name><operator>++</operator></expr></incr>)</control><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+        </diff:ws><expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name>i</name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt><diff:ws>
+    </diff:ws></block_content>}</block></for><diff:ws>
+
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>value</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><call><name>helper</name><argument_list>(<argument><expr><name>total</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><literal type="string">"result:<diff:ws> </diff:ws>"</literal><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name>value</name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt><diff:ws>
+
+    </diff:ws><return>return<diff:ws> </diff:ws><expr><literal type="number">0</literal></expr>;</return><diff:ws>
+</diff:ws></block_content>}</block></function><diff:ws>
+</diff:ws></diff:insert></unit>
+
+<unit xmlns:cpp="http://www.srcML.org/srcML/cpp" revision="1.0.0" language="C++" filename="original.cpp|"><diff:delete><cpp:include>#<cpp:directive>include</cpp:directive><diff:ws> </diff:ws><cpp:file>&lt;iostream&gt;</cpp:file></cpp:include><diff:ws>
+
+</diff:ws><function><type><name>int</name></type><diff:ws> </diff:ws><name>helper</name><parameter_list>(<parameter><decl><type><name>int</name></type><diff:ws> </diff:ws><name>x</name></decl></parameter>)</parameter_list><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>result</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><name>x</name><diff:ws> </diff:ws><operator>*</operator><diff:ws> </diff:ws><literal type="number">2</literal></expr></init></decl>;</decl_stmt><diff:ws>
+    </diff:ws><return>return<diff:ws> </diff:ws><expr><name>result</name></expr>;</return><diff:ws>
+</diff:ws></block_content>}</block></function><diff:ws>
+
+</diff:ws><function><type><name>int</name></type><diff:ws> </diff:ws><name>main</name><parameter_list>()</parameter_list><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>first</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">10</literal></expr></init></decl>;</decl_stmt><diff:ws>
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>second</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">20</literal></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>total</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><name>first</name><diff:ws> </diff:ws><operator>+</operator><diff:ws> </diff:ws><name>second</name></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><if_stmt><if>if<diff:ws> </diff:ws><condition>(<expr><name>total</name><diff:ws> </diff:ws><operator>&gt;</operator><diff:ws> </diff:ws><literal type="number">20</literal></expr>)</condition><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+        </diff:ws><expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><literal type="string">"large"</literal><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt><diff:ws>
+    </diff:ws></block_content>}</block></if></if_stmt><diff:ws>
+
+    </diff:ws><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>value</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><call><name>helper</name><argument_list>(<argument><expr><name>total</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt><diff:ws>
+
+    </diff:ws><expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name>value</name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt><diff:ws>
+
+    </diff:ws><return>return<diff:ws> </diff:ws><expr><literal type="number">0</literal></expr>;</return><diff:ws>
+</diff:ws></block_content>}</block></function><diff:ws>
+</diff:ws></diff:delete></unit>
+
+</unit>

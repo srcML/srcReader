@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:diff="http://www.srcML.org/srcDiff" revision="1.0.0" language="C++" filename="original.cpp|modified.cpp"><cpp:include>#<cpp:directive>include</cpp:directive> <cpp:file>&lt;iostream&gt;</cpp:file></cpp:include>
+
+<function><type><name>int</name></type> <name>helper</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>x</name></decl></parameter>)</parameter_list> <block>{<block_content>
+    <decl_stmt><decl><type><name>int</name></type> <name><diff:delete type="replace">result</diff:delete><diff:insert type="replace">doubled</diff:insert></name> <init>= <expr><name>x</name> <operator>*</operator> <literal type="number">2</literal></expr></init></decl>;</decl_stmt>
+    <return>return <expr><name><diff:delete type="replace">result</diff:delete><diff:insert type="replace">doubled</diff:insert></name></expr>;</return>
+</block_content>}</block></function>
+
+<function><type><name>int</name></type> <name>main</name><parameter_list>()</parameter_list> <block>{<block_content>
+<diff:delete><diff:ws>    </diff:ws><diff:delete move="1"><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>first</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">10</literal></expr></init></decl>;</decl_stmt></diff:delete><diff:ws>
+</diff:ws></diff:delete>    <decl_stmt><decl><type><name>int</name></type> <name>second</name> <init>= <expr><literal type="number">20</literal></expr></init></decl>;</decl_stmt>
+
+<diff:insert><diff:ws>    </diff:ws><diff:insert move="1"><decl_stmt><decl><type><name>int</name></type><diff:ws> </diff:ws><name>first</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">10</literal></expr></init></decl>;</decl_stmt></diff:insert><diff:ws>
+
+</diff:ws></diff:insert>    <decl_stmt><decl><type><name>int</name></type> <name>total</name> <init>= <expr><name>first</name> <operator>+</operator> <name>second</name><diff:insert><diff:ws> </diff:ws><operator>+</operator><diff:ws> </diff:ws><literal type="number">5</literal></diff:insert></expr></init></decl>;</decl_stmt>
+
+    <if_stmt><if>if <condition>(<diff:delete type="replace"><expr><name>total</name><diff:ws> </diff:ws><operator>&gt;</operator><diff:ws> </diff:ws><literal type="number">20</literal></expr></diff:delete><diff:insert type="replace"><expr><name>total</name><diff:ws> </diff:ws><operator>&gt;=</operator><diff:ws> </diff:ws><literal type="number">25</literal></expr></diff:insert>)</condition> <block>{<block_content>
+        <expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name> <operator>&lt;&lt;</operator> <literal type="string">"<diff:insert>very<diff:ws> </diff:ws></diff:insert>large"</literal> <operator>&lt;&lt;</operator> <name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt>
+    </block_content>}</block></if></if_stmt>
+
+<diff:insert><diff:ws>    </diff:ws><for>for<diff:ws> </diff:ws><control>(<init><decl><type><name>int</name></type><diff:ws> </diff:ws><name>i</name><diff:ws> </diff:ws><init>=<diff:ws> </diff:ws><expr><literal type="number">0</literal></expr></init></decl>;</init><diff:ws> </diff:ws><condition><expr><name>i</name><diff:ws> </diff:ws><operator>&lt;</operator><diff:ws> </diff:ws><literal type="number">3</literal></expr>;</condition><diff:ws> </diff:ws><incr><expr><name>i</name><operator>++</operator></expr></incr>)</control><diff:ws> </diff:ws><block>{<block_content><diff:ws>
+        </diff:ws><expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name>i</name><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws><name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt><diff:ws>
+    </diff:ws></block_content>}</block></for><diff:ws>
+
+</diff:ws></diff:insert>    <decl_stmt><decl><type><name>int</name></type> <name>value</name> <init>= <expr><call><name>helper</name><argument_list>(<argument><expr><name>total</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+
+    <expr_stmt><expr><name><name>std</name><operator>::</operator><name>cout</name></name> <operator>&lt;&lt;</operator> <diff:insert><literal type="string">"result:<diff:ws> </diff:ws>"</literal><diff:ws> </diff:ws><operator>&lt;&lt;</operator><diff:ws> </diff:ws></diff:insert><name>value</name> <operator>&lt;&lt;</operator> <name><name>std</name><operator>::</operator><name>endl</name></name></expr>;</expr_stmt>
+
+    <return>return <expr><literal type="number">0</literal></expr>;</return>
+</block_content>}</block></function>
+</unit>
