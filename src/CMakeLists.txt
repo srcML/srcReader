@@ -40,3 +40,7 @@ target_include_directories(srcreader_cli PRIVATE ${SRC_READER_INCLUDE_DIRS})
 set_target_properties(srcreader_cli PROPERTIES OUTPUT_NAME "srcReader")
 
 add_compile_options(-gdwarf-4)
+
+add_executable(print_xpaths ../test/print_xpaths.cpp)
+target_link_libraries(print_xpaths PRIVATE srcreader_shared ${SRC_READER_LIBRARIES})
+target_include_directories(print_xpaths PRIVATE ${SRC_READER_INCLUDE_DIRS})
