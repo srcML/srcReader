@@ -25,7 +25,19 @@
 
 #include <libxml/xmlwriter.h>
 
-#include <iostream>
+namespace {
+
+bool is_xmlns_attr(const std::string &name) {
+  return name == "xmlns" || name.rfind("xmlns:", 0) == 0;
+}
+
+const char * xmlns_prefix_from_attr_name(const std::string &name) {
+  if (name == "xmlns") return nullptr;
+  if (name.rfind("xmlns:", 0) == 0) return name.c_str() + 6;
+  return nullptr;
+}
+
+} // namespace
 
 class srcml_writer_error : public std::runtime_error {
 public:
@@ -147,7 +159,7 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
   unit = srcml_unit_create(archive);
   if(!unit) throw srcml_writer_error("Failure creating srcML Unit");
 
-  for(const std::shared_ptr<srcml_node::srcml_namespace> & ns : node.ns_definition) {
+  for (const std::shared_ptr<srcml_node::srcml_namespace> &ns : node.ns_definition) {
     if(ns == srcml_node::SRC_NAMESPACE) continue;
     check_srcml_error(
         srcml_archive_register_namespace(
@@ -157,6 +169,21 @@ bool srcml_writer::setup_archive(const srcml_node & node) {
         false,
         "Error registering namespace: ",
         ns->uri.c_str());
+  }
+
+  // Also register namespaces that were injected as xmlns/xmlns:prefix attributes.
+  for (const srcml_node::srcml_attribute_map_pair &attr : node.attributes) {
+    if (!is_xmlns_attr(attr.first)) continue;
+    if (!attr.second.value) continue;
+
+    check_srcml_error(
+        srcml_archive_register_namespace(
+            archive,
+            xmlns_prefix_from_attr_name(attr.first),
+            attr.second.value->c_str()),
+        false,
+        "Error registering namespace from attribute: ",
+        attr.first.c_str());
   }
 
   // Root <unit> may represent either:
