@@ -90,6 +90,10 @@ private:
   bool has_same_named_sibling(xmlNodePtr node) const;
   std::string get_node_inner_text(xmlNodePtr node) const;
   bool same_expanded_name(xmlNodePtr a, xmlNodePtr b) const;
+  bool root_kind_known;
+  bool root_is_archive;
+  bool has_attribute(xmlNodePtr node, const char *name) const;
+  bool is_root_archive_unit(xmlNodePtr node) const;
 
 public:
   srcml_reader(const std::string & filename);

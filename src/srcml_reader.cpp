@@ -22,7 +22,6 @@
 */
 #include <srcml_reader.hpp>
 
-#include <algorithm>
 #include <cstring>
 #include <vector>
 #include <string>
@@ -44,7 +43,7 @@ void srcml_reader::cleanup() {
 
 srcml_reader::srcml_reader(const std::string & filename) 
   : reader(nullptr), offset(std::string::npos), saved_node(), issue_end_tag(false), current_node(),
-    is_eof(false), iterator() {
+    is_eof(false), iterator(), root_kind_known(false), root_is_archive(false) {
 
   reader = xmlNewTextReaderFilename(filename.c_str());
   if(!reader) {
@@ -153,10 +152,15 @@ bool srcml_reader::read() {
       if (!expanded)
         throw srcml_reader_error("Error expanding current node");
 
-      std::size_t seen_sibling_index = 1;
+      if (!root_kind_known && xmlTextReaderDepth(reader) == 0) {
+        root_is_archive = is_root_archive_unit(expanded);
+        root_kind_known = true;
+      }
 
       // Count this element among its parent's direct child elements
       // using only its qualified element name, not its semantic predicate.
+      std::size_t seen_sibling_index = 1;
+
       if (!child_count_stack.empty()) {
         const std::string sibling_key = node_qname(expanded);
         seen_sibling_index = ++child_count_stack.back()[sibling_key];
@@ -302,23 +306,16 @@ std::string srcml_reader::build_segment(xmlNodePtr node,
   const std::string qname = node_qname(node);
   const std::string predicate = semantic_predicate(node);
 
+  // If we have a semantic predicate, prefer that and do not add [n].
+  // Example:
+  //   src:unit[@filename='a.cpp']
+  // not:
+  //   src:unit[1][@filename='a.cpp']
   if (!predicate.empty()) {
     return qname + predicate;
   }
 
-  // If streaming state already knows this is the 2nd/3rd/etc sibling
-  // with the same expanded name under the same parent, trust that.
-  if (seen_sibling_index > 1) {
-    return qname + "[" + std::to_string(seen_sibling_index) + "]";
-  }
-
-  // For the first sibling, we still want [1] when there are later
-  // same-named siblings. Keep the DOM-based fallback for that case.
-  if (has_same_named_sibling(node)) {
-    return qname + "[" + std::to_string(sibling_position(node)) + "]";
-  }
-
-  return qname;
+  return qname + "[" + std::to_string(seen_sibling_index) + "]";
 }
 
 
@@ -501,6 +498,24 @@ const xmlAttr * srcml_reader::find_attribute(xmlNodePtr node, const char *name) 
   return nullptr;
 }
 
+bool srcml_reader::has_attribute(xmlNodePtr node, const char *name) const {
+  return find_attribute(node, name) != nullptr;
+}
+
+bool srcml_reader::is_root_archive_unit(xmlNodePtr node) const {
+  if (!node || node->type != XML_ELEMENT_NODE || !node->name)
+    return false;
+
+  if (!xmlStrEqual(node->name, BAD_CAST "unit"))
+    return false;
+
+  // Root archive unit in srcML diff archives typically has url=... and no filename=...
+  const bool has_url = has_attribute(node, "url");
+  const bool has_filename = has_attribute(node, "filename");
+
+  return has_url && !has_filename;
+}
+
 const xmlNode *srcml_reader::find_child_element(xmlNodePtr node,
                                                 const char *local_name,
                                                 const char *namespace_uri) const {
@@ -578,15 +593,25 @@ std::string srcml_reader::escape_xpath_string(const char *text) const {
 std::string srcml_reader::get_current_xpath() const {
   if (xpath_stack.empty())
     return "";
+
+  // For archive documents, omit the outer archive root unit from the XPath.
+  // Example:
+  //   stored stack: [src:unit[1], src:unit[@filename='a.cpp'], diff:delete[1]]
+  //   emitted path: /src:unit[@filename='a.cpp']/diff:delete[1]
+  std::size_t start_index = (root_is_archive && xpath_stack.size() > 1) ? 1 : 0;
+
   std::size_t total_size = 0;
-  for (const auto &segment : xpath_stack) {
-    total_size += 1 + segment.size();
+  for (std::size_t i = start_index; i < xpath_stack.size(); ++i) {
+    total_size += 1 + xpath_stack[i].size();
   }
+
   std::string path;
   path.reserve(total_size);
-  for (const auto &segment : xpath_stack) {
+
+  for (std::size_t i = start_index; i < xpath_stack.size(); ++i) {
     path.push_back('/');
-    path += segment;
+    path += xpath_stack[i];
   }
+
   return path;
 }
