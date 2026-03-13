@@ -528,18 +528,18 @@ const xmlNode *srcml_reader::find_child_element(xmlNodePtr node,
 
 std::string srcml_reader::escape_xpath_string(const char *text) const {
   if (!text)
-    return "\"\"";
+    return "''";
 
   const std::string s(text);
 
-  // Prefer double quotes if possible.
-  if (s.find('"') == std::string::npos) {
-    return "\"" + s + "\"";
-  }
-
-  // Otherwise prefer single quotes.
+  // Prefer single quotes if possible.
   if (s.find('\'') == std::string::npos) {
     return "'" + s + "'";
+  }
+
+  // Otherwise prefer double quotes.
+  if (s.find('"') == std::string::npos) {
+    return "\"" + s + "\"";
   }
 
   // If both quote types appear, build concat(...)
