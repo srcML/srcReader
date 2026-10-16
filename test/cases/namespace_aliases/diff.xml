@@ -1,0 +1,10 @@
+<unit xmlns="http://www.srcML.org/srcML/src"
+      xmlns:diff="http://www.srcML.org/srcDiff"
+      xmlns:ext="urn:example:extension" xmlns:other="urn:example:extension"
+      filename="aliases.cpp">
+  <ext:container/>
+  <other:container>
+    <diff:delete><expr_stmt>transfer_value(state);</expr_stmt></diff:delete>
+  </other:container>
+  <ext:container/>
+</unit>

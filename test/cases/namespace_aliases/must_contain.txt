@@ -1,0 +1,4 @@
+/src:unit[1]/ext:container[1]
+/src:unit[1]/other:container[2]
+/src:unit[1]/other:container[2]/diff:delete[1]/src:expr_stmt[1]
+/src:unit[1]/ext:container[3]

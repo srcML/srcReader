@@ -157,12 +157,17 @@ bool srcml_reader::read() {
         root_kind_known = true;
       }
 
-      // Count this element among its parent's direct child elements
-      // using only its qualified element name, not its semantic predicate.
+      // XPath positions count siblings by namespace URI and local name,
+      // regardless of prefix aliases or prefix rebinding. A NUL separator
+      // keeps the two XML strings distinct without changing emitted QNames.
       std::size_t seen_sibling_index = 1;
 
       if (!child_count_stack.empty()) {
-        const std::string sibling_key = node_qname(expanded);
+        std::string sibling_key;
+        if (expanded->ns && expanded->ns->href)
+          sibling_key = reinterpret_cast<const char *>(expanded->ns->href);
+        sibling_key.push_back('\0');
+        sibling_key += reinterpret_cast<const char *>(expanded->name);
         seen_sibling_index = ++child_count_stack.back()[sibling_key];
       }
 
