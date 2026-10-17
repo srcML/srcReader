@@ -1,0 +1,6 @@
+/src:unit[@filename='same.cpp'][1]
+/src:unit[@filename='same.cpp'][1]/src:expr_stmt[1]
+/src:unit[@filename='other.cpp'][1]
+/src:unit[@filename='same.cpp'][2]
+/src:unit[@filename='same.cpp'][2]/src:expr_stmt[1]
+/src:unit[4]/src:expr_stmt[1]

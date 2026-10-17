@@ -1,0 +1,4 @@
+/src:unit[1]/src:function[src:name='process']
+/src:unit[1]/src:function[src:name='process'][4]
+/src:unit[1]/src:function[src:name='nested'][1]
+/src:unit[1]/src:function[src:name='second'][3]

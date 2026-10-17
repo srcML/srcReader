@@ -1,0 +1,12 @@
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:s="http://www.srcML.org/srcML/src" filename="overloads.cpp">
+  <function><name>other</name></function>
+  <function><name>process</name><parameter_list>(int value)</parameter_list></function>
+  <function><name>other</name></function>
+  <s:function><s:name>process</s:name><s:parameter_list>(double value)</s:parameter_list></s:function>
+  <function><block/></function>
+  <function><name><name>nested</name></name></function>
+  <function><name>nested</name></function>
+  <function><name>first</name><name>second</name><name>second</name></function>
+  <function><name>second</name></function>
+  <block_content><function><name>process</name></function></block_content>
+</unit>

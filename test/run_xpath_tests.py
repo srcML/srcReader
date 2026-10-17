@@ -35,7 +35,27 @@ def run_print_xpaths(binary: Path, diff_xml: Path) -> list[str]:
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
-def run_case(binary: Path, case_dir: Path) -> bool:
+def verify_resolution(diff_xml: Path, paths: list[str]) -> None:
+    """Require each generated locator to identify its own input XML element."""
+    from lxml import etree
+    src = "http://www.srcML.org/srcML/src"
+    tree = etree.parse(str(diff_xml), etree.XMLParser(resolve_entities=False, no_network=True))
+    root = tree.getroot()
+    attributes = {etree.QName(name).localname for name in root.attrib}
+    archive = etree.QName(root).localname == "unit" and "url" in attributes and "filename" not in attributes
+    elements = [node for node in root.iter() if isinstance(node.tag, str)]
+    if len(paths) != len(elements):
+        raise AssertionError("Generated locator count differs from XML element count")
+    for node, path in zip(elements, paths):
+        namespaces = {prefix: uri for prefix, uri in node.nsmap.items() if prefix}
+        namespaces.update(src=src, diff="http://www.srcML.org/srcDiff", mv="http://www.srcML.org/srcMove")
+        expression = ("/src:unit[1]" if archive and node is not root else "") + path
+        matches = tree.xpath(expression, namespaces=namespaces)
+        if len(matches) != 1 or matches[0] is not node:
+            raise AssertionError(f"Locator must identify its own XML element: {path} ({len(matches)} matches)")
+
+
+def run_case(binary: Path, case_dir: Path, check_resolution: bool = False) -> bool:
     diff_xml = case_dir / "diff.xml"
     must_contain = case_dir / "must_contain.txt"
     must_not_contain = case_dir / "must_not_contain.txt"
@@ -50,6 +70,8 @@ def run_case(binary: Path, case_dir: Path) -> bool:
 
     try:
         actual_lines = run_print_xpaths(binary, diff_xml)
+        if check_resolution:
+            verify_resolution(diff_xml, actual_lines)
     except Exception as exc:
         print(f"[FAIL] {case_dir.name}: {exc}")
         return False
@@ -92,6 +114,8 @@ def main() -> int:
         default="test/cases",
         help="Directory containing test case subdirectories",
     )
+    parser.add_argument("--verify-resolution", action="store_true",
+                        help="Resolve every emitted XPath to its own XML element (requires lxml)")
     args = parser.parse_args()
 
     binary = Path(args.binary)
@@ -112,7 +136,7 @@ def main() -> int:
 
     all_passed = True
     for case_dir in case_dirs:
-        ok = run_case(binary, case_dir)
+        ok = run_case(binary, case_dir, args.verify_resolution)
         if not ok:
             all_passed = False
 

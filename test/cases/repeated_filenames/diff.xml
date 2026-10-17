@@ -1,0 +1,6 @@
+<unit xmlns="http://www.srcML.org/srcML/src" url="archive">
+  <unit filename="same.cpp"><expr_stmt>first();</expr_stmt></unit>
+  <unit filename="other.cpp"/>
+  <unit filename="same.cpp"><expr_stmt>second();</expr_stmt></unit>
+  <unit><expr_stmt>unnamed();</expr_stmt></unit>
+</unit>

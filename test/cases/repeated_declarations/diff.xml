@@ -1,0 +1,8 @@
+<unit xmlns="http://www.srcML.org/srcML/src" filename="declarations.cpp">
+  <function_decl><name>f</name></function_decl><function_decl><name>f</name></function_decl>
+  <constructor><name>C</name></constructor><constructor><name>C</name></constructor>
+  <destructor><name>~C</name></destructor><destructor><name>~C</name></destructor>
+  <decl><name>x</name></decl><decl><name>y</name></decl><decl><name>x</name></decl>
+  <param><name>p</name></param><param><name>p</name></param>
+  <typedef><name>T</name></typedef><typedef><name>T</name></typedef>
+</unit>

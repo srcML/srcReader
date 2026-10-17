@@ -23,8 +23,21 @@
 #include <srcml_reader.hpp>
 
 #include <cstring>
+#include <unordered_set>
 #include <vector>
 #include <string>
+
+static bool uses_name_predicate(xmlNodePtr node) {
+  if (!node || !node->name) return false;
+  const char *name = reinterpret_cast<const char *>(node->name);
+  return std::strcmp(name, "function") == 0 ||
+         std::strcmp(name, "function_decl") == 0 ||
+         std::strcmp(name, "constructor") == 0 ||
+         std::strcmp(name, "destructor") == 0 ||
+         std::strcmp(name, "decl") == 0 ||
+         std::strcmp(name, "param") == 0 ||
+         std::strcmp(name, "typedef") == 0;
+}
 
 class srcml_reader_error : public std::runtime_error {
 public:
@@ -161,6 +174,7 @@ bool srcml_reader::read() {
       // regardless of prefix aliases or prefix rebinding. A NUL separator
       // keeps the two XML strings distinct without changing emitted QNames.
       std::size_t seen_sibling_index = 1;
+      const std::string predicate = semantic_predicate(expanded);
 
       if (!child_count_stack.empty()) {
         std::string sibling_key;
@@ -168,10 +182,33 @@ bool srcml_reader::read() {
           sibling_key = reinterpret_cast<const char *>(expanded->ns->href);
         sibling_key.push_back('\0');
         sibling_key += reinterpret_cast<const char *>(expanded->name);
-        seen_sibling_index = ++child_count_stack.back()[sibling_key];
+        auto &counts = child_count_stack.back();
+        seen_sibling_index = ++counts[sibling_key];
+
+        // Count matches to each name condition even when this sibling uses a
+        // positional fallback (for example, a structurally complex <name>).
+        // XPath compares the complete string value of any direct src:name.
+        const std::string predicate_key = sibling_key + std::string(1, '\0');
+        if (uses_name_predicate(expanded)) {
+          std::unordered_set<std::string> conditions;
+          for (xmlNodePtr child = expanded->children; child; child = child->next) {
+            if (child->type != XML_ELEMENT_NODE ||
+                !xmlStrEqual(child->name, BAD_CAST "name") || !child->ns ||
+                !xmlStrEqual(child->ns->href, BAD_CAST "http://www.srcML.org/srcML/src"))
+              continue;
+            const std::string text = get_node_inner_text(child);
+            conditions.insert("[src:name=" + escape_xpath_string(text.c_str()) + "]");
+          }
+          for (const auto &condition : conditions)
+            ++counts[predicate_key + condition];
+        } else if (!predicate.empty()) {
+          ++counts[predicate_key + predicate];
+        }
+        if (!predicate.empty())
+          seen_sibling_index = counts.at(predicate_key + predicate);
       }
 
-      xpath_stack.push_back(build_segment(expanded, seen_sibling_index));
+      xpath_stack.push_back(build_segment(expanded, predicate, seen_sibling_index));
 
       // Prepare a fresh child-count frame for this element's own children.
       child_count_stack.emplace_back();
@@ -307,20 +344,12 @@ std::string srcml_reader::get_current_inner_text() const {
 }
 
 std::string srcml_reader::build_segment(xmlNodePtr node,
+                                        const std::string &predicate,
                                         std::size_t seen_sibling_index) const {
   const std::string qname = node_qname(node);
-  const std::string predicate = semantic_predicate(node);
-
-  // If we have a semantic predicate, prefer that and do not add [n].
-  // Example:
-  //   src:unit[@filename='a.cpp']
-  // not:
-  //   src:unit[1][@filename='a.cpp']
-  if (!predicate.empty()) {
-    return qname + predicate;
-  }
-
-  return qname + "[" + std::to_string(seen_sibling_index) + "]";
+  // Position follows the condition: [2] selects the second matching name or
+  // filename, rather than the second element of this expanded name overall.
+  return qname + predicate + "[" + std::to_string(seen_sibling_index) + "]";
 }
 
 
@@ -474,18 +503,8 @@ std::string srcml_reader::semantic_predicate(xmlNodePtr node) const {
     return pred;
   };
 
-  // Named callable/program elements.
-  if (std::strcmp(local_name, "function") == 0 ||
-      std::strcmp(local_name, "function_decl") == 0 ||
-      std::strcmp(local_name, "constructor") == 0 ||
-      std::strcmp(local_name, "destructor") == 0) {
-    return make_name_predicate(find_child_element(node, "name", SRC_URI));
-  }
-
-  // Named declaration-like elements.
-  if (std::strcmp(local_name, "decl") == 0 ||
-      std::strcmp(local_name, "param") == 0 ||
-      std::strcmp(local_name, "typedef") == 0) {
+  // Named callables and declarations share the same direct-name condition.
+  if (uses_name_predicate(node)) {
     return make_name_predicate(find_child_element(node, "name", SRC_URI));
   }
 
